@@ -72,7 +72,7 @@ export default function Login() {
         </button>
 
         <div className="login-footer">
-          ERP / Billing System
+          {/* ERP / Billing System */}
         </div>
       </form>
     </div>
