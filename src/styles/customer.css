@@ -1,0 +1,16 @@
+
+.dropdown {
+  @apply absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded shadow-sm;
+}
+
+.dropdown-item {
+  @apply px-3 py-2 text-sm cursor-pointer hover:bg-gray-100;
+}
+
+.dropdown-header {
+  @apply flex items-center justify-between px-3 py-2 border-b border-gray-200 text-xs text-gray-500;
+}
+
+.create-btn {
+  @apply text-blue-600 hover:text-blue-700 font-medium;
+}

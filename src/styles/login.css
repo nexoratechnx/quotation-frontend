@@ -1,0 +1,24 @@
+
+.login-page {
+  @apply min-h-screen flex items-center justify-center;
+}
+
+.login-card {
+  @apply bg-white border border-gray-200 rounded-md w-96 p-6;
+}
+
+.login-title {
+  @apply text-lg font-semibold text-center mb-6 text-gray-800;
+}
+
+.login-input {
+  @apply w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500;
+}
+
+.login-button {
+  @apply w-full bg-blue-600 text-white py-2 rounded text-sm font-medium hover:bg-blue-700;
+}
+
+.login-footer {
+  @apply text-xs text-gray-500 text-center mt-4;
+}

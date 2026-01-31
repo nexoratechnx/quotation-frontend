@@ -1,0 +1,24 @@
+
+.item-row {
+  @apply grid grid-cols-12 gap-2 items-center py-2 border-b border-gray-100;
+}
+
+.item-input {
+  @apply border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500;
+}
+
+.item-dropdown {
+  @apply absolute z-20 mt-1 w-full bg-white border border-gray-200 rounded shadow-sm;
+}
+
+.item-option {
+  @apply px-3 py-2 text-sm cursor-pointer hover:bg-gray-100;
+}
+
+.qty-input {
+  @apply border border-gray-300 rounded px-2 py-1 text-sm w-16;
+}
+
+.delete-btn {
+  @apply text-red-500 hover:text-red-600 text-sm;
+}

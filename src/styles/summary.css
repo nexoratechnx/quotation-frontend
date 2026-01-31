@@ -1,0 +1,20 @@
+
+.summary-row {
+  @apply flex justify-between text-sm py-1;
+}
+
+.summary-label {
+  @apply text-gray-600;
+}
+
+.summary-value {
+  @apply font-medium;
+}
+
+.summary-total {
+  @apply flex justify-between text-base font-semibold border-t border-gray-200 pt-3 mt-3;
+}
+
+.print-btn {
+  @apply bg-blue-600 text-white px-5 py-2 rounded text-sm hover:bg-blue-700;
+}

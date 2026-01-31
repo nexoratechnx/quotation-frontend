@@ -1,0 +1,55 @@
+.orders-page {
+  padding: 20px;
+}
+
+.orders-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.orders-hint {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.orders-table {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.orders-row {
+  display: grid;
+  grid-template-columns: 1.2fr 2fr 1.5fr 1.2fr 1.2fr;
+  padding: 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.orders-head {
+  background: #f9fafb;
+  font-weight: 600;
+}
+
+.orders-row.active {
+  background: #eff6ff;
+}
+
+.orders-row:hover {
+  background: #f3f4f6;
+}
+
+.orders-empty {
+  padding: 30px;
+  text-align: center;
+  color: #9ca3af;
+}
+.print-button {
+  padding: 8px 16px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
