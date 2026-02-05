@@ -8,14 +8,28 @@ export default function Orders() {
 
   const [orders, setOrders] = useState([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const listRef = useRef([]);
 
   
   useEffect(() => {
-    fetchOrders()
-      .then(setOrders)
-      .catch(console.error);
+    const loadOrders = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await fetchOrders();
+        setOrders(data);
+      } catch (err) {
+        console.error('Failed to load orders:', err);
+        setError(err.message || 'Failed to load orders. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadOrders();
   }, []);
 
 
@@ -63,13 +77,32 @@ export default function Orders() {
           <div>Status</div>
         </div>
 
-        {orders.length === 0 && (
+        {loading && (
+          <div className="orders-empty">
+            Loading orders...
+          </div>
+        )}
+
+        {error && (
+          <div style={{
+            padding: '20px',
+            textAlign: 'center',
+            backgroundColor: '#fee',
+            color: '#c33',
+            borderRadius: '4px',
+            margin: '10px'
+          }}>
+            {error}
+          </div>
+        )}
+
+        {!loading && !error && orders.length === 0 && (
           <div className="orders-empty">
             No orders found
           </div>
         )}
 
-        {orders.map((order, index) => (
+        {!loading && !error && orders.map((order, index) => (
           <div
             key={order.id}
             ref={(el) => (listRef.current[index] = el)}

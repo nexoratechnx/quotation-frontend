@@ -8,10 +8,26 @@ export default function OrderDetails() {
   const navigate = useNavigate();
 
   const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
 
   useEffect(() => {
-    fetchOrderById(id).then(setOrder);
+    const loadOrder = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await fetchOrderById(id);
+        setOrder(data);
+      } catch (err) {
+        console.error('Failed to load order:', err);
+        setError(err.message || 'Failed to load order details.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadOrder();
   }, [id]);
 
 
@@ -30,6 +46,46 @@ export default function OrderDetails() {
     window.addEventListener("keydown", handleKeys);
     return () => window.removeEventListener("keydown", handleKeys);
   }, [navigate]);
+
+  if (loading) {
+    return (
+      <div className="order-details-page">
+        <p className="loading-text">Loading order...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="order-details-page">
+        <div style={{
+          padding: '20px',
+          textAlign: 'center',
+          backgroundColor: '#fee',
+          color: '#c33',
+          borderRadius: '4px',
+          margin: '20px'
+        }}>
+          {error}
+        </div>
+        <div style={{ textAlign: 'center', marginTop: '20px' }}>
+          <button 
+            onClick={() => navigate('/orders')}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: '#4F46E5',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Back to Orders
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (!order) {
     return (
@@ -53,9 +109,9 @@ export default function OrderDetails() {
     
       <section className="order-info">
         <div><b>Customer:</b> {order.customerName}</div>
-        <div><b>Phone:</b> {order.customerPhone}</div>
-        <div><b>Employee:</b> {order.employeeName}</div>
-        <div><b>Date:</b> {order.date}</div>
+        <div><b>Phone:</b> {order.customerPhone || 'N/A'}</div>
+        <div><b>Employee:</b> {order.employeeName || 'N/A'}</div>
+        <div><b>Date:</b> {new Date(order.billingDate).toLocaleDateString('en-IN')}</div>
         <div><b>Status:</b> {order.status}</div>
       </section>
 
@@ -69,11 +125,11 @@ export default function OrderDetails() {
         </div>
 
         {order.items.map((item) => (
-          <div className="order-item-row" key={item.id}>
-            <span>{item.name}</span>
-            <span>₹{item.price}</span>
-            <span>{item.qty}</span>
-            <span>₹{item.price * item.qty}</span>
+          <div className="order-item-row" key={item.itemId}>
+            <span>{item.itemName}</span>
+            <span>₹{Number(item.price).toFixed(2)}</span>
+            <span>{item.quantity}</span>
+            <span>₹{Number(item.total).toFixed(2)}</span>
           </div>
         ))}
       </section>
@@ -82,15 +138,15 @@ export default function OrderDetails() {
       <section className="order-summary">
         <div>
           <span>Subtotal</span>
-          <span>₹{order.subTotal}</span>
+          <span>₹{Number(order.subtotal).toFixed(2)}</span>
         </div>
         <div>
           <span>GST</span>
-          <span>₹{order.gstAmount}</span>
+          <span>₹{Number(order.gstAmount).toFixed(2)}</span>
         </div>
         <div className="order-summary-total">
           <span>Total</span>
-          <span>₹{order.total}</span>
+          <span>₹{Number(order.total).toFixed(2)}</span>
         </div>
       </section>
 

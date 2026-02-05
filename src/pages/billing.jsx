@@ -16,7 +16,8 @@ import { useNavigate } from "react-router-dom";
 import {
   fetchCustomers,
   fetchEmployees,
-  fetchItems
+  fetchItems,
+  createOrder
 } from "../api/api";
 
 export default function Billing() {
@@ -43,11 +44,17 @@ export default function Billing() {
   const [items, setItems] = useState([]);
   const [gstEnabled, setGstEnabled] = useState(false);
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [showAddItem, setShowAddItem] = useState(false);
   const [showAddEmployee, setShowAddEmployee] = useState(false);
 
   const [printNow, setPrintNow] = useState(false);
+  const [savingOrder, setSavingOrder] = useState(false);
+  const [orderError, setOrderError] = useState(null);
+  const [savedOrderData, setSavedOrderData] = useState(null);
 
   const customerRef = useRef(null);
   const employeeRef = useRef(null);
@@ -55,8 +62,25 @@ export default function Billing() {
   const qtyRefs = useRef([]);
 
   useEffect(() => {
-    fetchCustomers().then(setCustomers).catch(console.error);
-    fetchEmployees().then(setEmployees).catch(console.error);
+    const loadInitialData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const [customersData, employeesData] = await Promise.all([
+          fetchCustomers(),
+          fetchEmployees()
+        ]);
+        setCustomers(customersData);
+        setEmployees(employeesData);
+      } catch (err) {
+        console.error('Failed to load initial data:', err);
+        setError(err.message || 'Failed to load data. Please refresh the page.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadInitialData();
   }, []);
 
   const totalItems = items.reduce((s, i) => s + i.qty, 0);
@@ -103,9 +127,42 @@ export default function Billing() {
     customerRef.current?.focus();
   };
 
-  const handlePrint = () => {
-    if (!selectedCustomer || !items.length) return;
-    setPrintNow(true);
+  const handlePrint = async () => {
+    if (!selectedCustomer || !items.length) {
+      alert('Please select a customer and add at least one item');
+      return;
+    }
+
+    // Clear any previous errors
+    setOrderError(null);
+    setSavingOrder(true);
+
+    try {
+      // Prepare order data for backend
+      const orderData = {
+        customerId: selectedCustomer.id,
+        employeeId: selectedEmployee?.id || null,
+        gstEnabled: gstEnabled,
+        items: items.map(item => ({
+          itemId: item.id,
+          quantity: item.qty,
+          price: item.price
+        }))
+      };
+
+      // Save order to database
+      const savedOrder = await createOrder(orderData);
+      setSavedOrderData(savedOrder);
+      
+      // Now proceed with printing
+      setPrintNow(true);
+    } catch (error) {
+      console.error('Failed to save order:', error);
+      setOrderError(error.message || 'Failed to save order. Please try again.');
+      alert(`Error: ${error.message || 'Failed to save order. Please try again.'}`);
+    } finally {
+      setSavingOrder(false);
+    }
   };
 
   return (
@@ -120,6 +177,30 @@ export default function Billing() {
           <button className="billing-nav-btn font-medium">Profile ⌄</button>
         </div>
       </header>
+
+      {loading && (
+        <div style={{
+          padding: '20px',
+          textAlign: 'center',
+          fontSize: '16px',
+          color: '#666'
+        }}>
+          Loading...
+        </div>
+      )}
+
+      {error && (
+        <div style={{
+          margin: '20px',
+          padding: '15px',
+          backgroundColor: '#fee',
+          color: '#c33',
+          borderRadius: '4px',
+          fontSize: '14px'
+        }}>
+          {error}
+        </div>
+      )}
 
       <main className="billing-content">
         <section className="card col-span-4 relative">
@@ -262,9 +343,30 @@ export default function Billing() {
             <span>₹{finalTotal.toFixed(2)}</span>
           </div>
 
+          {orderError && (
+            <div style={{
+              padding: '10px',
+              marginTop: '10px',
+              backgroundColor: '#fee',
+              color: '#c33',
+              borderRadius: '4px',
+              fontSize: '14px'
+            }}>
+              {orderError}
+            </div>
+          )}
+
           <div className="mt-4 text-right">
-            <button className="print-btn" onClick={handlePrint}>
-              Print Receipt
+            <button 
+              className="print-btn" 
+              onClick={handlePrint}
+              disabled={savingOrder || !selectedCustomer || items.length === 0}
+              style={{ 
+                opacity: savingOrder || !selectedCustomer || items.length === 0 ? 0.6 : 1,
+                cursor: savingOrder || !selectedCustomer || items.length === 0 ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {savingOrder ? 'Saving...' : 'Print Receipt'}
             </button>
           </div>
         </section>

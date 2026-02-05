@@ -1,4 +1,5 @@
-const BASE_URL = "http://localhost:8080/api";
+// Use environment variable for API base URL, fallback to localhost for development
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
 
 // Helper function to get auth headers
 const getAuthHeaders = () => {
@@ -9,6 +10,30 @@ const getAuthHeaders = () => {
   };
 };
 
+// Helper function to handle API responses with better error handling
+const handleResponse = async (response) => {
+  if (!response.ok) {
+    // Handle 401 Unauthorized - token might be expired
+    if (response.status === 401) {
+      logout();
+      window.location.href = '/';
+      throw new Error('Session expired. Please login again.');
+    }
+    
+    // Try to parse error message from response
+    let errorMessage = `Request failed with status ${response.status}`;
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.message || errorMessage;
+    } catch (e) {
+      // If response is not JSON, use default message
+    }
+    
+    throw new Error(errorMessage);
+  }
+  return response.json();
+};
+
 // Authentication APIs
 export const register = async (payload) => {
   const res = await fetch(`${BASE_URL}/auth/register`, {
@@ -16,8 +41,7 @@ export const register = async (payload) => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error("Failed to register");
-  const data = await res.json();
+  const data = await handleResponse(res);
   if (data.token) {
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify({ name: data.name, email: data.email }));
@@ -31,8 +55,7 @@ export const login = async (payload) => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error("Failed to login");
-  const data = await res.json();
+  const data = await handleResponse(res);
   if (data.token) {
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify({ name: data.name, email: data.email }));
@@ -54,16 +77,14 @@ export const fetchCustomers = async (search = "") => {
   const res = await fetch(`${BASE_URL}/customers?search=${search}`, {
     headers: getAuthHeaders()
   });
-  if (!res.ok) throw new Error("Failed to fetch customers");
-  return res.json();
+  return handleResponse(res);
 };
 
 export const fetchCustomerById = async (id) => {
   const res = await fetch(`${BASE_URL}/customers/${id}`, {
     headers: getAuthHeaders()
   });
-  if (!res.ok) throw new Error("Failed to fetch customer");
-  return res.json();
+  return handleResponse(res);
 };
 
 export const createCustomer = async (payload) => {
@@ -72,8 +93,7 @@ export const createCustomer = async (payload) => {
     headers: getAuthHeaders(),
     body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error("Failed to create customer");
-  return res.json();
+  return handleResponse(res);
 };
 
 export const updateCustomer = async (id, payload) => {
@@ -82,8 +102,7 @@ export const updateCustomer = async (id, payload) => {
     headers: getAuthHeaders(),
     body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error("Failed to update customer");
-  return res.json();
+  return handleResponse(res);
 };
 
 // Employee APIs
@@ -91,8 +110,7 @@ export const fetchEmployees = async () => {
   const res = await fetch(`${BASE_URL}/employees`, {
     headers: getAuthHeaders()
   });
-  if (!res.ok) throw new Error("Failed to fetch employees");
-  return res.json();
+  return handleResponse(res);
 };
 
 export const addEmployee = async (payload) => {
@@ -101,8 +119,7 @@ export const addEmployee = async (payload) => {
     headers: getAuthHeaders(),
     body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error("Failed to add employee");
-  return res.json();
+  return handleResponse(res);
 };
 
 // Category APIs
@@ -110,8 +127,7 @@ export const fetchCategories = async () => {
   const res = await fetch(`${BASE_URL}/categories`, {
     headers: getAuthHeaders()
   });
-  if (!res.ok) throw new Error("Failed to fetch categories");
-  return res.json();
+  return handleResponse(res);
 };
 
 export const addCategory = async (payload) => {
@@ -120,8 +136,7 @@ export const addCategory = async (payload) => {
     headers: getAuthHeaders(),
     body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error("Failed to add category");
-  return res.json();
+  return handleResponse(res);
 };
 
 // Item APIs
@@ -133,8 +148,7 @@ export const fetchItems = async ({ search = "", categoryId = "" } = {}) => {
   const res = await fetch(`${BASE_URL}/items?${params.toString()}`, {
     headers: getAuthHeaders()
   });
-  if (!res.ok) throw new Error("Failed to fetch items");
-  return res.json();
+  return handleResponse(res);
 };
 
 export const addItem = async (payload) => {
@@ -143,8 +157,7 @@ export const addItem = async (payload) => {
     headers: getAuthHeaders(),
     body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error("Failed to add item");
-  return res.json();
+  return handleResponse(res);
 };
 
 // Order APIs
@@ -154,22 +167,19 @@ export const createOrder = async (payload) => {
     headers: getAuthHeaders(),
     body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error("Failed to create order");
-  return res.json();
+  return handleResponse(res);
 };
 
 export const fetchOrders = async () => {
   const res = await fetch(`${BASE_URL}/orders`, {
     headers: getAuthHeaders()
   });
-  if (!res.ok) throw new Error("Failed to fetch orders");
-  return res.json();
+  return handleResponse(res);
 };
 
 export const fetchOrderById = async (orderId) => {
   const res = await fetch(`${BASE_URL}/orders/${orderId}`, {
     headers: getAuthHeaders()
   });
-  if (!res.ok) throw new Error("Failed to fetch order");
-  return res.json();
+  return handleResponse(res);
 };
