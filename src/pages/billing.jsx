@@ -6,9 +6,9 @@ import "../styles/print.css";
 
 import PrintInvoice from "../components/PrintInvoice.jsx";
 import AddCustomerModal from "../components/AddCustomerModal.jsx";
-import AddCategoryModal from "../components/addcategorymodal.jsx";
-import AddItemModal from "../components/additemmodal.jsx";
-import AddEmployeeModal from "../components/addemployeemodel.jsx";
+import AddCategoryModal from "../components/AddCategoryModal.jsx";
+import AddItemModal from "../components/AddItemModal.jsx";
+import AddEmployeeModal from "../components/AddEmployeeModel.jsx";
 
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";

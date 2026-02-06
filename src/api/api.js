@@ -1,6 +1,9 @@
 // Use environment variable for API base URL, fallback to localhost for development
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
 
+// Log the API base URL for debugging
+console.log('🔗 API Base URL:', BASE_URL);
+
 // Helper function to get auth headers
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
@@ -15,6 +18,7 @@ const handleResponse = async (response) => {
   if (!response.ok) {
     // Handle 401 Unauthorized - token might be expired
     if (response.status === 401) {
+      console.warn('⚠️ Unauthorized (401) - Logging out...');
       logout();
       window.location.href = '/';
       throw new Error('Session expired. Please login again.');
@@ -25,8 +29,10 @@ const handleResponse = async (response) => {
     try {
       const errorData = await response.json();
       errorMessage = errorData.message || errorMessage;
+      console.error('❌ API Error:', errorMessage, errorData);
     } catch (e) {
       // If response is not JSON, use default message
+      console.error('❌ API Error:', errorMessage);
     }
     
     throw new Error(errorMessage);
@@ -50,6 +56,7 @@ export const register = async (payload) => {
 };
 
 export const login = async (payload) => {
+  console.log('🔐 Attempting login for:', payload.email);
   const res = await fetch(`${BASE_URL}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -59,6 +66,7 @@ export const login = async (payload) => {
   if (data.token) {
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify({ name: data.name, email: data.email }));
+    console.log('✅ Login successful:', data.email);
   }
   return data;
 };

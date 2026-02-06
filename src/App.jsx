@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/login.jsx";
-import Billing from "./pages/Billing.jsx";
+import Billing from "./pages/billing.jsx";
 import Orders from "./pages/orders.jsx";
 import OrderDetails from "./pages/OrderDetails.jsx";
 import { isAuthenticated } from "./api/api";
