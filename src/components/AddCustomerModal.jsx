@@ -40,8 +40,15 @@ export default function AddCustomerModal({ onClose, onSaved }) {
 
 
   const handleKeyDown = (e) => {
-    if (e.key === "Escape") onClose();
-    if (e.key === "Enter") handleSave();
+    if (e.key === "Escape") {
+      e.preventDefault();
+      e.stopPropagation();
+      onClose();
+    }
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSave();
+    }
   };
 
   return (

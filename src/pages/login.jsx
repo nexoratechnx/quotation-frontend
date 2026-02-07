@@ -71,6 +71,10 @@ export default function Login() {
           {loading ? "Logging in..." : "Login"}
         </button>
 
+        <p className="login-key-hint" role="status" aria-label="Keyboard shortcut">
+          Enter to login
+        </p>
+
         <div className="login-footer">
           {/* ERP / Billing System */}
         </div>

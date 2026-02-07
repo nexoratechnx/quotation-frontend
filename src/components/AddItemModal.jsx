@@ -48,8 +48,16 @@ export default function AddItemModal({ onClose, onSaved }) {
 
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter") handleSave();
-    if (e.key === "Escape") onClose();
+    if (e.key === "Enter") {
+      e.preventDefault();
+      e.stopPropagation();
+      handleSave();
+    }
+    if (e.key === "Escape") {
+      e.preventDefault();
+      e.stopPropagation();
+      onClose();
+    }
   };
 
   return (

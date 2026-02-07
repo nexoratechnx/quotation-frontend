@@ -1,3 +1,5 @@
+import { useEffect, useRef } from "react";
+
 export default function PrintInvoice({
   customer,
   employee,
@@ -5,8 +7,50 @@ export default function PrintInvoice({
   subTotal,
   gstAmount,
   total,
-  billingDate   
+  billingDate,
+  isPreview,
+  onAfterPrint
 }) {
+  const printContainerRef = useRef(null);
+
+  useEffect(() => {
+    console.log('🖨️ PrintInvoice mounted - isPreview:', isPreview);
+    console.log('Customer:', customer?.name);
+    console.log('Items count:', items?.length);
+    console.log('Total:', total);
+  }, [customer, items, total, isPreview]);
+
+  useEffect(() => {
+    if (!isPreview) {
+      console.log('📋 Starting print process...');
+      
+      // Handle the print event
+      const handlePrintEvent = () => {
+        console.log('✅ Print dialog closed');
+        setTimeout(() => {
+          if (onAfterPrint) {
+            console.log('🔄 Calling onAfterPrint callback');
+            onAfterPrint();
+          }
+        }, 500);
+      };
+      
+      // Wait for DOM to fully render before printing
+      const timer = setTimeout(() => {
+        console.log('🖨️ Calling window.print()');
+        window.print();
+      }, 1500);
+      
+      // Listen for print completion
+      window.addEventListener('afterprint', handlePrintEvent);
+      
+      return () => {
+        clearTimeout(timer);
+        window.removeEventListener('afterprint', handlePrintEvent);
+      };
+    }
+  }, [isPreview, onAfterPrint]);
+
   return (
     <div className="invoice-print">
 

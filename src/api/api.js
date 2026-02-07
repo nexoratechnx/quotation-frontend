@@ -191,3 +191,12 @@ export const fetchOrderById = async (orderId) => {
   });
   return handleResponse(res);
 };
+
+export const updateOrderStatus = async (orderId, status) => {
+  const res = await fetch(`${BASE_URL}/orders/${orderId}/status`, {
+    method: "PATCH",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ status })
+  });
+  return handleResponse(res);
+};

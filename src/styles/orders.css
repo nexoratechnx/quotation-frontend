@@ -1,12 +1,59 @@
 .orders-page {
-  padding: 20px;
+  min-height: 100vh;
+  background: #f3f4f6;
+  padding: 24px;
 }
 
+/* Header – same style as order details */
 .orders-header {
   display: flex;
-  justify-content: space-between;
+  flex-wrap: wrap;
   align-items: center;
-  margin-bottom: 16px;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 16px 20px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.orders-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.orders-back {
+  padding: 8px 14px;
+  font-size: 14px;
+  color: #4b5563;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.orders-back:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.orders-title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.orders-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .orders-hint {
@@ -14,42 +61,178 @@
   color: #6b7280;
 }
 
-.orders-table {
+/* Card – same as order details */
+.orders-card {
+  background: #fff;
+  border-radius: 12px;
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  overflow: hidden;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
-.orders-row {
-  display: grid;
-  grid-template-columns: 1.2fr 2fr 1.5fr 1.2fr 1.2fr;
-  padding: 12px;
+.orders-search-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.orders-search-input {
+  flex: 1;
+  max-width: 360px;
+  padding: 10px 14px;
+  font-size: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  color: #111827;
+  transition: border-color 0.15s;
+}
+
+.orders-search-input::placeholder {
+  color: #9ca3af;
+}
+
+.orders-search-input:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.orders-search-clear {
+  padding: 8px 14px;
+  font-size: 13px;
+  color: #6b7280;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
   cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.orders-search-clear:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+/* Table */
+.orders-table-wrap {
+  overflow-x: auto;
+}
+
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.orders-table th,
+.orders-table td {
+  padding: 12px 14px;
+  text-align: left;
   border-bottom: 1px solid #e5e7eb;
 }
 
-.orders-head {
+.orders-table th {
   background: #f9fafb;
   font-weight: 600;
+  color: #374151;
 }
 
-.orders-row.active {
-  background: #eff6ff;
+.orders-table tbody tr {
+  cursor: pointer;
+  transition: background 0.1s;
 }
 
-.orders-row:hover {
+.orders-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+.orders-table tbody tr.active {
+  background: #eef2ff;
+}
+
+.orders-table td:last-child {
+  white-space: nowrap;
+}
+
+/* Status badges – same as order details */
+.orders-status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  text-transform: capitalize;
+}
+
+.orders-status-badge.status-pending {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.orders-status-badge.status-completed {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.orders-status-badge.status-confirmed {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.orders-status-badge.status-cancelled {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.orders-status-badge.status-draft {
   background: #f3f4f6;
+  color: #4b5563;
+}
+
+/* Loading & empty & error */
+.orders-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  gap: 16px;
+  color: #6b7280;
+}
+
+.orders-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e5e7eb;
+  border-top-color: #4f46e5;
+  border-radius: 50%;
+  animation: orders-spin 0.8s linear infinite;
+}
+
+@keyframes orders-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .orders-empty {
-  padding: 30px;
+  padding: 40px 20px;
   text-align: center;
-  color: #9ca3af;
+  color: #6b7280;
+  font-size: 14px;
 }
-.print-button {
-  padding: 8px 16px;
-  background: #2563eb;
-  color: white;
-  border: none;
-  cursor: pointer;
+
+.orders-error {
+  padding: 20px;
+  text-align: center;
+  background: #fef2f2;
+  color: #b91c1c;
+  border-radius: 8px;
+  margin: 10px 0;
+}
+
+.orders-error p {
+  margin: 0;
 }

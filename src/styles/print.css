@@ -1,72 +1,220 @@
-
-
-@media print {
-
-  body * {
-    visibility: hidden;
-  }
-
-  .invoice-print,
-  .invoice-print * {
-    visibility: visible;
-  }
-
-  .invoice-print {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    padding: 20px;
-    font-size: 12px;
-  }
+/* Normal display - show invoice on screen */
+.invoice-print {
+  background: white;
+  padding: 20px;
+  margin: 0;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+  color: #000;
 }
-
 
 .invoice-header {
   text-align: center;
   margin-bottom: 20px;
+  border-bottom: 2px solid #333;
+  padding-bottom: 15px;
+}
+
+.invoice-header h2 {
+  margin: 0 0 10px 0;
+  font-size: 28px;
+  font-weight: bold;
 }
 
 .invoice-meta {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  font-size: 13px;
   margin-top: 10px;
-  font-size: 12px;
+}
+
+.invoice-meta div {
+  padding: 3px;
 }
 
 .invoice-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 20px;
+  margin: 20px 0;
+  font-size: 13px;
 }
 
-.invoice-table th,
-.invoice-table td {
-  border: 1px solid #000;
-  padding: 6px;
+.invoice-table thead {
+  background-color: #f0f0f0;
+}
+
+.invoice-table th {
+  border: 1px solid #333;
+  padding: 10px;
   text-align: center;
+  font-weight: bold;
+}
+
+.invoice-table td {
+  border: 1px solid #333;
+  padding: 8px;
+  text-align: center;
+}
+
+.invoice-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
 }
 
 .invoice-summary {
-  width: 300px;
+  width: 100%;
+  max-width: 350px;
   margin-left: auto;
+  margin-right: 0;
   margin-top: 20px;
+  margin-bottom: 20px;
+  font-size: 13px;
 }
 
-.invoice-summary div {
+.invoice-summary > div {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 6px;
+  padding: 8px 10px;
+  border-bottom: 1px solid #ddd;
 }
 
 .invoice-total {
-  font-weight: bold;
-  border-top: 1px solid #000;
-  padding-top: 6px;
+  font-weight: bold !important;
+  border-top: 2px solid #333 !important;
+  border-bottom: 2px solid #333 !important;
+  font-size: 14px !important;
+  padding: 10px !important;
 }
 
 .invoice-footer {
-  margin-top: 30px;
   text-align: center;
-  font-size: 11px;
+  margin-top: 30px;
+  font-size: 12px;
+  padding-top: 15px;
+  border-top: 1px solid #ddd;
+}
+
+/* PRINT STYLES */
+@media print {
+  /* Reset margins for print */
+  * {
+    margin: 0;
+    padding: 0;
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: white;
+    color: #000;
+  }
+
+  /* Override .print-only so the order-details invoice is shown when printing */
+  .print-only {
+    display: block !important;
+    visibility: visible !important;
+  }
+
+  /*
+   * Do NOT hide body > * (that would hide #root and everything inside it).
+   * Instead: hide all content by default, then show only .invoice-print.
+   */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Show only the invoice and its contents */
+  .invoice-print,
+  .invoice-print * {
+    visibility: visible !important;
+  }
+
+  /* Position invoice at top of first page so it prints correctly */
+  .invoice-print {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 20px !important;
+    background: white !important;
+    color: #000 !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Make all invoice content visible and styled */
+  .invoice-print * {
+    color: #000 !important;
+    background: inherit !important;
+  }
+
+  /* Header styles for print */
+  .invoice-header {
+    page-break-inside: avoid !important;
+    margin-bottom: 20px;
+  }
+
+  /* Table styles for print */
+  .invoice-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    page-break-inside: avoid !important;
+  }
+
+  .invoice-table,
+  .invoice-table tr,
+  .invoice-table td,
+  .invoice-table th {
+    page-break-inside: avoid !important;
+    border: 1px solid #000 !important;
+  }
+
+  .invoice-table th,
+  .invoice-table td {
+    padding: 8px !important;
+    text-align: center !important;
+    background: white !important;
+    color: #000 !important;
+  }
+
+  .invoice-table thead tr {
+    background: #f0f0f0 !important;
+  }
+
+  /* Summary styles for print */
+  .invoice-summary {
+    page-break-inside: avoid !important;
+    width: 100% !important;
+    max-width: 400px !important;
+  }
+
+  .invoice-summary > div {
+    display: flex !important;
+    justify-content: space-between !important;
+    padding: 8px 10px !important;
+    color: #000 !important;
+  }
+
+  .invoice-total {
+    font-weight: bold !important;
+    border-top: 2px solid #000 !important;
+    border-bottom: 2px solid #000 !important;
+    padding: 10px !important;
+  }
+
+  /* Footer styles for print */
+  .invoice-footer {
+    page-break-before: avoid !important;
+    text-align: center !important;
+  }
+
+  .invoice-footer p {
+    color: #000 !important;
+    margin: 0 !important;
+  }
 }

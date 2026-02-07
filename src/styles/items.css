@@ -1,10 +1,62 @@
 
+/* Item list: same grid for header and rows so columns align */
 .item-row {
-  @apply grid grid-cols-12 gap-2 items-center py-2 border-b border-gray-100;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 160px 100px 90px;
+  gap: 12px 16px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.item-row-head {
+  padding: 8px 0 10px 0;
+  border-bottom: 2px solid #e5e7eb;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.item-col-name {
+  min-width: 0;
+  font-size: 14px;
+  color: #111827;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item-col-price {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.item-col-price .item-input {
+  width: 100%;
+  min-width: 0;
+}
+
+.item-col-qty {
+  display: flex;
+  align-items: center;
+}
+
+.item-col-qty .qty-input {
+  width: 100%;
+  max-width: 80px;
+}
+
+.item-col-action {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .item-input {
-  @apply border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500;
+  @apply border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:border-blue-500;
+  box-sizing: border-box;
 }
 
 .item-dropdown {
@@ -16,9 +68,46 @@
 }
 
 .qty-input {
-  @apply border border-gray-300 rounded px-2 py-1 text-sm w-16;
+  @apply border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:border-blue-500;
+  box-sizing: border-box;
 }
 
 .delete-btn {
-  @apply text-red-500 hover:text-red-600 text-sm;
+  @apply text-red-500 hover:text-red-600 text-sm py-1 px-2;
+}
+
+/* Eye button: show original vs selling price on hover */
+.price-eye-btn {
+  @apply inline-flex items-center justify-center w-8 h-8 rounded border border-gray-300 bg-gray-50 cursor-help text-base;
+  @apply hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600;
+  position: relative;
+}
+
+.price-eye-btn:hover::after {
+  content: attr(title);
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translateX(-50%) translateY(-6px);
+  padding: 8px 10px;
+  background: #1f2937;
+  color: #fff;
+  font-size: 12px;
+  white-space: nowrap;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 30;
+  pointer-events: none;
+}
+
+.price-eye-btn:hover::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translateX(-50%) translateY(2px);
+  border: 6px solid transparent;
+  border-top-color: #1f2937;
+  z-index: 31;
+  pointer-events: none;
 }

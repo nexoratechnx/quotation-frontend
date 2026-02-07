@@ -6,8 +6,19 @@
   @apply h-14 bg-white border-b border-gray-200 flex items-center px-6 gap-4;
 }
 
+.billing-key-hint {
+  @apply text-xs text-gray-500 hidden sm:inline;
+}
+
 .billing-nav-btn {
   @apply text-sm text-gray-600 hover:text-blue-600;
+}
+
+.profile-dropdown {
+  right: 0;
+  left: auto;
+  min-width: 120px;
+  width: auto;
 }
 
 .billing-content {
