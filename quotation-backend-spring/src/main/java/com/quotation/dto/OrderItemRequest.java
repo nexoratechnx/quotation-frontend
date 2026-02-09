@@ -2,6 +2,7 @@ package com.quotation.dto;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -12,11 +13,12 @@ public class OrderItemRequest {
     @NotNull(message = "Item ID is required")
     private Long itemId;
     
-    @NotNull(message = "Quantity is required")
-    @Positive(message = "Quantity must be positive")
-    private Integer quantity;
-    
+    @NotNull(message = "Unit value is required")
+    @Positive(message = "Unit value must be positive")
+    private BigDecimal unitValue;
+
+    /** Selling price per unit (current billing price); 0 allowed until user sets it */
     @NotNull(message = "Price is required")
-    @Positive(message = "Price must be positive")
+    @PositiveOrZero(message = "Price must be zero or positive")
     private BigDecimal price;
 }

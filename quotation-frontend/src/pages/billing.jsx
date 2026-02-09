@@ -6,9 +6,9 @@ import "../styles/print.css";
 
 import PrintInvoice from "../components/PrintInvoice.jsx";
 import AddCustomerModal from "../components/AddCustomerModal.jsx";
-import AddCategoryModal from "../components/addcategorymodal.jsx";
-import AddItemModal from "../components/additemmodal.jsx";
-import AddEmployeeModal from "../components/addemployeemodel.jsx";
+import AddCategoryModal from "../components/AddCategoryModal.jsx";
+import AddItemModal from "../components/AddItemModal.jsx";
+import AddEmployeeModal from "../components/AddEmployeeModel.jsx";
 
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -39,6 +39,7 @@ export default function Billing() {
   const [customers, setCustomers] = useState([]);
   const [employees, setEmployees] = useState([]);
   const [itemsFromDb, setItemsFromDb] = useState([]);
+  const [itemFilter, setItemFilter] = useState("");
 
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
@@ -58,8 +59,9 @@ export default function Billing() {
 
   const customerRef = useRef(null);
   const employeeRef = useRef(null);
-  const itemSearchRef = useRef(null);
-  const qtyRefs = useRef([]);
+  const placeholderDropdownRef = useRef(null);
+  const itemFilterInputRef = useRef(null);
+  const unitValueRefs = useRef([]);
   const priceRefs = useRef([]);
   const deleteRefs = useRef([]);
   const gstSelectRef = useRef(null);
@@ -72,24 +74,45 @@ export default function Billing() {
       if (profileRef.current && !profileRef.current.contains(e.target)) {
         setShowProfileDropdown(false);
       }
+      if (showItemDropdown && placeholderDropdownRef.current && !placeholderDropdownRef.current.contains(e.target)) {
+        setShowItemDropdown(false);
+      }
     };
-    if (showProfileDropdown) document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showProfileDropdown]);
+  }, [showProfileDropdown, showItemDropdown]);
 
   useEffect(() => {
     fetchCustomers().then(setCustomers).catch(console.error);
     fetchEmployees().then(setEmployees).catch(console.error);
+    fetchItems({}).then((data) => setItemsFromDb(Array.isArray(data) ? data : [])).catch((err) => {
+      console.error("Failed to load items:", err);
+      setItemsFromDb([]);
+    });
   }, []);
+
+  useEffect(() => {
+    if (showItemDropdown) {
+      setItemFilter("");
+      setItemIndex(0);
+      setTimeout(() => itemFilterInputRef.current?.focus(), 0);
+      fetchItems({}).then((data) => setItemsFromDb(Array.isArray(data) ? data : [])).catch((err) => {
+        console.error("Failed to load items:", err);
+      });
+    }
+  }, [showItemDropdown]);
 
   useEffect(() => {
     customerRef.current?.focus();
   }, []);
 
-  const totalItems = items.reduce((s, i) => s + i.qty, 0);
-  const subTotal = items.reduce((s, i) => s + i.qty * (Number(i.price) || 0), 0);
+  const subTotal = items.reduce((s, i) => s + (Number(i.amount) || 0), 0);
   const gstAmount = gstEnabled ? subTotal * 0.18 : 0;
   const finalTotal = subTotal + gstAmount;
+
+  const filteredItemsFromDb = itemFilter.trim()
+    ? itemsFromDb.filter((it) => it.name.toLowerCase().includes(itemFilter.toLowerCase()))
+    : itemsFromDb;
 
   useEffect(() => {
     const handleKeys = (e) => {
@@ -145,7 +168,65 @@ export default function Billing() {
     setSelectedEmployee(null);
     setGstEnabled(false);
     setShowExitPopup(false);
+    setShowItemDropdown(false);
     customerRef.current?.focus();
+  };
+
+  const addItemToList = (it) => {
+    const originalPrice = Number(it.price) || 0;
+    const existing = items.find((i) => i.id === it.id);
+    if (existing) {
+      const newVal = (Number(existing.unitValue) || 0) + 1;
+      const sellingPrice = Number(existing.price) || 0;
+      setItems((prev) =>
+        prev.map((i) =>
+          i.id === it.id
+            ? { ...i, unitValue: newVal, amount: newVal * sellingPrice }
+            : i
+        )
+      );
+    } else {
+      setItems((prev) => [
+        ...prev,
+        {
+          id: it.id,
+          name: it.name,
+          unitType: it.unitType || "PCS",
+          originalPrice,
+          price: 0,
+          unitValue: 1,
+          amount: 0,
+        },
+      ]);
+    }
+    // Keep dropdown open so user can add next item quickly
+    setItemIndex(0);
+    setItemFilter("");
+    setTimeout(() => itemFilterInputRef.current?.focus(), 0);
+  };
+
+  const updateItemUnitValue = (index, value) => {
+    const num = value === "" ? 0 : Number(value) || 0;
+    setItems((prev) => {
+      const next = [...prev];
+      const item = next[index];
+      if (!item) return prev;
+      item.unitValue = num;
+      item.amount = num * (Number(item.price) || 0);
+      return next;
+    });
+  };
+
+  const updateItemPrice = (index, value) => {
+    const num = value === "" ? 0 : Number(value) || 0;
+    setItems((prev) => {
+      const next = [...prev];
+      const item = next[index];
+      if (!item) return prev;
+      item.price = num;
+      item.amount = (Number(item.unitValue) || 0) * num;
+      return next;
+    });
   };
 
   const handlePrint = () => {
@@ -161,16 +242,16 @@ export default function Billing() {
         customerId: selectedCustomer.id,
         employeeId: selectedEmployee?.id || null,
         gstEnabled: gstEnabled,
-        items: items.map(item => ({
+        items: items.map((item) => ({
           itemId: item.id,
-          quantity: item.qty,
-          price: item.price
-        }))
+          unitValue: Number(item.unitValue) || 0,
+          price: Number(item.price) || 0,
+        })),
       };
 
       const savedOrder = await createOrder(orderData);
-      console.log('✅ Order saved:', savedOrder);
-      await updateOrderStatus(savedOrder.id, "COMPLETED");
+      console.log("✅ Order saved:", savedOrder);
+      await updateOrderStatus(savedOrder.id, "PRINTED");
       setPrintNow(true);
       setShowPreview(false);
     } catch (error) {
@@ -207,6 +288,7 @@ export default function Billing() {
           <button className="billing-nav-btn" onClick={() => setShowAddCategory(true)}>Add Category</button>
           <button className="billing-nav-btn" onClick={() => setShowAddItem(true)}>Add Item</button>
           <button className="billing-nav-btn" onClick={() => setShowAddEmployee(true)}>Add Employee</button>
+          <button className="billing-nav-btn" onClick={() => navigate("/items")}>Items</button>
           <button className="billing-nav-btn" onClick={() => navigate("/orders")}>Orders</button>
           <div className="relative" ref={profileRef}>
             <button
@@ -307,23 +389,35 @@ export default function Billing() {
               if (showEmployeeDropdown) {
                 if (e.key === "ArrowDown") {
                   e.preventDefault();
-                  setEmployeeIndex(i => (i + 1) % employees.length);
+                  if (employees.length) {
+                    setEmployeeIndex(i => (i + 1) % employees.length);
+                  }
                 }
                 if (e.key === "ArrowUp") {
                   e.preventDefault();
-                  setEmployeeIndex(i => (i - 1 + employees.length) % employees.length);
+                  if (employees.length) {
+                    setEmployeeIndex(i => (i - 1 + employees.length) % employees.length);
+                  }
                 }
-                if (e.key === "Enter" && employees[employeeIndex]) {
+                if (e.key === "Enter") {
                   e.preventDefault();
-                  setSelectedEmployee(employees[employeeIndex]);
+                  if (employees.length && employees[employeeIndex]) {
+                    setSelectedEmployee(employees[employeeIndex]);
+                  }
                   setShowEmployeeDropdown(false);
-                  itemSearchRef.current?.focus();
+                  placeholderDropdownRef.current?.focus();
                 }
                 if (e.key === "Escape") {
                   e.preventDefault();
                   e.stopPropagation();
                   setShowEmployeeDropdown(false);
+                  // After closing employee selection, move to item list
+                  placeholderDropdownRef.current?.focus();
                 }
+              } else if (e.key === "Enter" || e.key === "ArrowDown") {
+                // When no dropdown is open, Enter / ArrowDown moves to Item List card
+                e.preventDefault();
+                placeholderDropdownRef.current?.focus();
               }
             }}
           />
@@ -337,7 +431,7 @@ export default function Billing() {
                   onMouseDown={() => {
                     setSelectedEmployee(e);
                     setShowEmployeeDropdown(false);
-                    itemSearchRef.current?.focus();
+                    placeholderDropdownRef.current?.focus();
                   }}
                 >
                   {e.name}
@@ -347,173 +441,218 @@ export default function Billing() {
           )}
         </section>
 
-           <section className="card col-span-8 relative">
-          <h2 className="card-title">Item List</h2>
+          <section className="card col-span-8 relative">
+            <h2 className="card-title">Item List</h2>
 
-          <input
-            ref={itemSearchRef}
-            className="input mb-3"
-            placeholder="Search item"
-            onChange={async (e) => {
-              const data = await fetchItems({ search: e.target.value });
-              setItemsFromDb(data || []);
-              setShowItemDropdown(true);
-              setItemIndex(0);
-            }}
-            onKeyDown={(e) => {
-              if (showItemDropdown && itemsFromDb.length) {
-                if (e.key === "ArrowDown") {
-                  e.preventDefault();
-                  setItemIndex(i => (i + 1) % itemsFromDb.length);
-                }
-                if (e.key === "ArrowUp") {
-                  e.preventDefault();
-                  setItemIndex(i => (i - 1 + itemsFromDb.length) % itemsFromDb.length);
-                }
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  const it = itemsFromDb[itemIndex];
-                  if (it) {
-                    const newIndex = items.length;
-                    setItems(p => [...p, { ...it, qty: 1, price: 0, originalPrice: it.price }]);
-                    setShowItemDropdown(false);
-                    setItemIndex(0);
-                    setTimeout(() => priceRefs.current[newIndex]?.focus(), 0);
-                  }
-                }
-                if (e.key === "Escape") {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setShowItemDropdown(false);
-                }
-              } else if (!showItemDropdown && e.key === "ArrowDown" && items.length) {
-                e.preventDefault();
-                priceRefs.current[0]?.focus();
-              }
-            }}
-          />
-
-          {showItemDropdown && (
-            <div className="item-dropdown">
-              {itemsFromDb.map((it, i) => (
-                <div
-                  key={it.id}
-                  className={`item-option ${i === itemIndex ? "bg-gray-100" : ""}`}
-                  onMouseDown={() => {
-                    const newIndex = items.length;
-                    setItems(p => [...p, { ...it, qty: 1, price: 0, originalPrice: it.price }]);
-                    setShowItemDropdown(false);
-                    setItemIndex(0);
-                    setTimeout(() => priceRefs.current[newIndex]?.focus(), 0);
-                  }}
-                >
-                  {it.name}
+            {items.length > 0 && (
+              <div className="item-row item-row-head">
+                <div className="item-col-name">Name</div>
+                <div className="item-col-qty">Unit </div>
+                <div className="item-col-price">Price</div>
+                <div className="item-col-unit">Per</div>
+                <div className="item-col-amount">Amount</div>
+                <div className="item-col-eye" aria-hidden="true" />
+                <div className="item-col-action">Action</div>
+              </div>
+            )}
+            {items.map((item, index) => (
+              <div className="item-row" key={`${item.id}-${index}`}>
+                <div className="item-col-name">{item.name}</div>
+                <div className="item-col-qty">
+                  <input
+                    ref={(el) => (unitValueRefs.current[index] = el)}
+                    className="qty-input"
+                    type="number"
+                    min="0"
+                    step={["KG", "SQFT"].includes(item.unitType) ? "0.01" : "1"}
+                    value={item.unitValue == null ? "" : item.unitValue}
+                    onChange={(e) => updateItemUnitValue(index, e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        gstSelectRef.current?.focus();
+                        return;
+                      }
+                      if (e.key === "ArrowDown") {
+                        e.preventDefault();
+                        priceRefs.current[index]?.focus();
+                      }
+                      if (e.key === "ArrowUp" && index === 0) {
+                        e.preventDefault();
+                        placeholderDropdownRef.current?.focus();
+                      } else if (e.key === "ArrowUp") {
+                        e.preventDefault();
+                        unitValueRefs.current[index - 1]?.focus();
+                      }
+                    }}
+                  />
                 </div>
-              ))}
-            </div>
-          )}
+                <div className="item-col-price">
+                  <input
+                    ref={(el) => (priceRefs.current[index] = el)}
+                    className="item-input item-input-price"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={item.price == null ? "" : item.price}
+                    onChange={(e) => updateItemPrice(index, e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        gstSelectRef.current?.focus();
+                        return;
+                      }
+                      if (e.key === "ArrowDown") {
+                        e.preventDefault();
+                        deleteRefs.current[index]?.focus();
+                      }
+                      if (e.key === "ArrowUp") {
+                        e.preventDefault();
+                        unitValueRefs.current[index]?.focus();
+                      }
+                    }}
+                  />
+                </div>
+                <div className="item-col-unit item-col-unit-readonly">{item.unitType || "PCS"}</div>
+                <div className="item-col-amount">₹{(Number(item.amount) || 0).toFixed(2)}</div>
+                <div className="item-col-eye">
+                  <span
+                    className="price-eye-btn"
+                    title={`Original: ₹${Number(item.originalPrice ?? item.price).toFixed(2)} | Selling: ₹${Number(item.price).toFixed(2)}`}
+                    aria-label="View original and selling price"
+                  >
+                    👁
+                  </span>
+                </div>
+                <div className="item-col-action">
+                  <button
+                    ref={(el) => (deleteRefs.current[index] = el)}
+                    type="button"
+                    className="delete-btn"
+                    onClick={() => {
+                      // Decide where focus should go after this row is removed
+                      const hasMore = items.length > 1;
+                      const nextIndex =
+                        !hasMore ? -1 : index < items.length - 1 ? index : index - 1;
 
-          {items.length > 0 && (
-            <div className="item-row item-row-head">
-              <div className="item-col-name">Item</div>
-              <div className="item-col-price">Price</div>
-              <div className="item-col-qty">Quantity</div>
-              <div className="item-col-action">Action</div>
-            </div>
-          )}
-          {items.map((item, index) => (
-            <div className="item-row" key={`${item.id}-${index}`}>
-              <div className="item-col-name">{item.name}</div>
+                      setItems((prev) => prev.filter((_, i) => i !== index));
 
-              <div className="item-col-price">
-                <input
-                  ref={(el) => (priceRefs.current[index] = el)}
-                  className="item-input"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder=""
-                  value={item.price === 0 || item.price === "" ? "" : item.price}
-                  onChange={(e) => {
-                    const updated = [...items];
-                    const v = e.target.value;
-                    updated[index].price = v === "" ? 0 : Number(v) || 0;
-                    setItems(updated);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "ArrowDown") {
-                      e.preventDefault();
-                      qtyRefs.current[index]?.focus();
-                    }
-                    if (e.key === "ArrowUp") {
-                      e.preventDefault();
-                      if (index === 0) itemSearchRef.current?.focus();
-                      else deleteRefs.current[index - 1]?.focus();
-                    }
-                  }}
-                />
-                <span
-                  className="price-eye-btn"
-                  title={`Original: ₹${(item.originalPrice ?? item.price).toFixed(2)} | Selling: ₹${Number(item.price).toFixed(2)}`}
-                  aria-label="View original and selling price"
-                >
-                  👁
-                </span>
+                      // After state update, move focus appropriately
+                      setTimeout(() => {
+                        if (nextIndex >= 0) {
+                          unitValueRefs.current[nextIndex]?.focus();
+                        } else {
+                          // No items left, go to billing summary (GST select)
+                          gstSelectRef.current?.focus();
+                        }
+                      }, 0);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        gstSelectRef.current?.focus();
+                        return;
+                      }
+                      if (e.key === "ArrowDown") {
+                        e.preventDefault();
+                        // If there is a next row, move down into it; otherwise go to GST
+                        if (index < items.length - 1) {
+                          unitValueRefs.current[index + 1]?.focus();
+                        } else {
+                          gstSelectRef.current?.focus();
+                        }
+                      }
+                      if (e.key === "ArrowUp") {
+                        e.preventDefault();
+                        priceRefs.current[index]?.focus();
+                      }
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
+            ))}
 
-              <div className="item-col-qty">
-                <input
-                  ref={(el) => (qtyRefs.current[index] = el)}
-                  className="qty-input"
-                  type="number"
-                  min="1"
-                  value={item.qty}
-                  onChange={(e) => {
-                    const updated = [...items];
-                    updated[index].qty = Number(e.target.value);
-                    setItems(updated);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "ArrowDown") {
-                      e.preventDefault();
-                      deleteRefs.current[index]?.focus();
-                    }
-                    if (e.key === "ArrowUp") {
-                      e.preventDefault();
-                      priceRefs.current[index]?.focus();
-                    }
-                  }}
-                />
-              </div>
-
-              <div className="item-col-action">
-                <button
-                  ref={(el) => (deleteRefs.current[index] = el)}
-                  type="button"
-                  className="delete-btn"
-                  onClick={() => setItems(items.filter((_, i) => i !== index))}
-                  onKeyDown={(e) => {
-                    if (e.key === "ArrowDown") {
-                      e.preventDefault();
-                      gstSelectRef.current?.focus();
-                    }
-                    if (e.key === "ArrowUp") {
-                      e.preventDefault();
-                      itemSearchRef.current?.focus();
-                    }
-                  }}
-                >
-                  Delete
-                </button>
-              </div>
+            <div className="item-placeholder-wrap" ref={placeholderDropdownRef} tabIndex={-1}>
+              <button
+                type="button"
+                className="item-placeholder-btn"
+                onClick={() => setShowItemDropdown((v) => !v)}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowItemDropdown(false);
+                    gstSelectRef.current?.focus();
+                    return;
+                  }
+                  if (e.key === "ArrowUp" && items.length > 0) {
+                    e.preventDefault();
+                    unitValueRefs.current[items.length - 1]?.focus();
+                  }
+                }}
+              >
+                Search & Select Item
+              </button>
+              {showItemDropdown && (
+                <div className="item-dropdown">
+                  <input
+                    ref={itemFilterInputRef}
+                    type="text"
+                    className="input item-dropdown-filter"
+                    placeholder="Type to filter..."
+                    value={itemFilter}
+                    onChange={(e) => {
+                      setItemFilter(e.target.value);
+                      setItemIndex(0);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setShowItemDropdown(false);
+                        gstSelectRef.current?.focus();
+                        return;
+                      }
+                      if (e.key === "ArrowDown") {
+                        e.preventDefault();
+                        setItemIndex((i) => (i + 1) % Math.max(1, filteredItemsFromDb.length));
+                      }
+                      if (e.key === "ArrowUp") {
+                        e.preventDefault();
+                        setItemIndex((i) => (i - 1 + filteredItemsFromDb.length) % Math.max(1, filteredItemsFromDb.length));
+                      }
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        const it = filteredItemsFromDb[itemIndex];
+                        if (it) addItemToList(it);
+                      }
+                    }}
+                  />
+                  {filteredItemsFromDb.map((it, i) => (
+                    <div
+                      key={it.id}
+                      className={`item-option ${i === itemIndex ? "bg-gray-100" : ""}`}
+                      onMouseDown={() => addItemToList(it)}
+                    >
+                      {it.name}
+                    </div>
+                  ))}
+                  {filteredItemsFromDb.length === 0 && (
+                    <div className="item-option text-gray-500">No items match</div>
+                  )}
+                </div>
+              )}
             </div>
-          ))}
-        </section>
+          </section>
 
         <section className="card col-span-12">
           <h2 className="card-title">Billing Summary</h2>
 
-          <div className="summary-row"><span>Total Items</span><span>{totalItems}</span></div>
           <div className="summary-row"><span>Subtotal</span><span>₹{subTotal.toFixed(2)}</span></div>
 
           <div className="summary-row">
@@ -530,7 +669,7 @@ export default function Billing() {
                 }
                 if (e.key === "ArrowUp" && items.length) {
                   e.preventDefault();
-                  deleteRefs.current[items.length - 1]?.focus();
+                  unitValueRefs.current[items.length - 1]?.focus();
                 }
               }}
             >

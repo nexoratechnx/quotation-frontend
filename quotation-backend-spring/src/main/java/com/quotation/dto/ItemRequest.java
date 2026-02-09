@@ -21,6 +21,7 @@ public class ItemRequest {
     private Long categoryId;
     
     private String description;
-    private String unit = "pcs";
+    /** Unit type: PCS, KG, SQFT, BOX */
+    private String unitType = "PCS";
     private Boolean isActive = true;
 }

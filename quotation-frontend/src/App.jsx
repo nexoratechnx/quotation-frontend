@@ -3,6 +3,7 @@ import Login from "./pages/login.jsx";
 import Billing from "./pages/billing.jsx";
 import Orders from "./pages/orders.jsx";
 import OrderDetails from "./pages/OrderDetails.jsx";
+import Items from "./pages/items.jsx";
 import { isAuthenticated } from "./api/api";
 
 // Protected Route Component
@@ -20,6 +21,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Billing />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/items"
+          element={
+            <ProtectedRoute>
+              <Items />
             </ProtectedRoute>
           }
         />

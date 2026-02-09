@@ -12,7 +12,8 @@ public class ItemResponse {
     private BigDecimal price;
     private CategoryResponse category;
     private String description;
-    private String unit;
+    /** Unit type: PCS, KG, SQFT, BOX */
+    private String unitType;
     private Boolean isActive;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

@@ -140,12 +140,11 @@ public class OrderService {
         OrderItem orderItem = new OrderItem();
         orderItem.setItemId(item.getId());
         orderItem.setItemName(item.getName());
-        orderItem.setQuantity(request.getQuantity());
-        orderItem.setPrice(request.getPrice());
-        orderItem.setUnit(item.getUnit());
-        
-        BigDecimal itemTotal = request.getPrice().multiply(BigDecimal.valueOf(request.getQuantity()));
-        orderItem.setTotal(itemTotal);
+        orderItem.setUnitType(item.getUnitType());
+        orderItem.setUnitValue(request.getUnitValue());
+        BigDecimal sellingPrice = request.getPrice() != null ? request.getPrice() : item.getPrice();
+        orderItem.setPrice(sellingPrice);
+        orderItem.setAmount(sellingPrice.multiply(request.getUnitValue()));
 
         return orderItem;
     }
@@ -153,7 +152,7 @@ public class OrderService {
     private void calculateOrderTotals(Order order) {
         // Calculate subtotal
         BigDecimal subtotal = order.getItems().stream()
-                .map(OrderItem::getTotal)
+                .map(OrderItem::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         order.setSubtotal(subtotal);
 
@@ -211,10 +210,10 @@ public class OrderService {
         OrderItemResponse response = new OrderItemResponse();
         response.setItemId(item.getItemId());
         response.setItemName(item.getItemName());
-        response.setQuantity(item.getQuantity());
+        response.setUnitType(item.getUnitType() != null ? item.getUnitType().name() : null);
+        response.setUnitValue(item.getUnitValue());
         response.setPrice(item.getPrice());
-        response.setUnit(item.getUnit());
-        response.setTotal(item.getTotal());
+        response.setAmount(item.getAmount());
         return response;
     }
 

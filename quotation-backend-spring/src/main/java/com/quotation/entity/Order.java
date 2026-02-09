@@ -80,7 +80,7 @@ public class Order {
     private LocalDateTime updatedAt;
 
     public enum OrderStatus {
-        DRAFT, PENDING, CONFIRMED, CANCELLED, COMPLETED
+        DRAFT, PENDING, CONFIRMED, CANCELLED, COMPLETED, PRINTED
     }
 
     @PrePersist

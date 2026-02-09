@@ -64,7 +64,7 @@ public class ItemService {
         item.setCategory(category);
         item.setPrice(request.getPrice());
         item.setDescription(request.getDescription());
-        item.setUnit(request.getUnit());
+        item.setUnitType(parseUnitType(request.getUnitType()));
         item.setCreatedBy(currentUser);
 
         Item saved = itemRepository.save(item);
@@ -81,7 +81,7 @@ public class ItemService {
         item.setCategory(category);
         item.setPrice(request.getPrice());
         item.setDescription(request.getDescription());
-        item.setUnit(request.getUnit());
+        item.setUnitType(parseUnitType(request.getUnitType()));
 
         Item updated = itemRepository.save(item);
         return convertToResponse(updated);
@@ -106,11 +106,20 @@ public class ItemService {
         
         response.setPrice(item.getPrice());
         response.setDescription(item.getDescription());
-        response.setUnit(item.getUnit());
+        response.setUnitType(item.getUnitType() != null ? item.getUnitType().name() : "PCS");
         response.setIsActive(item.getIsActive());
         response.setCreatedAt(item.getCreatedAt());
         response.setUpdatedAt(item.getUpdatedAt());
         return response;
+    }
+
+    private Item.UnitType parseUnitType(String value) {
+        if (value == null || value.isEmpty()) return Item.UnitType.PCS;
+        try {
+            return Item.UnitType.valueOf(value.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return Item.UnitType.PCS;
+        }
     }
 
     private User getCurrentUser() {

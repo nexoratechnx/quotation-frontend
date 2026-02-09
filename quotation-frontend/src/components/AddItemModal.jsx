@@ -8,6 +8,7 @@ export default function AddItemModal({ onClose, onSaved }) {
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [categoryId, setCategoryId] = useState("");
+  const [unitType, setUnitType] = useState("PCS");
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -33,7 +34,8 @@ export default function AddItemModal({ onClose, onSaved }) {
       const newItem = await addItem({
         name,
         price: Number(price),
-        categoryId
+        categoryId,
+        unitType: unitType || "PCS",
       });
 
       onSaved?.(newItem);
@@ -93,6 +95,17 @@ export default function AddItemModal({ onClose, onSaved }) {
                 {c.name}
               </option>
             ))}
+          </select>
+
+          <select
+            className="input"
+            value={unitType}
+            onChange={(e) => setUnitType(e.target.value)}
+          >
+            <option value="PCS">PCS</option>
+            <option value="KG">KG</option>
+            <option value="SQFT">SQFT</option>
+            <option value="BOX">BOX</option>
           </select>
         </div>
 

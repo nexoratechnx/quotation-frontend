@@ -17,6 +17,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Item {
 
+    public enum UnitType {
+        PCS, KG, SQFT, BOX
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -34,8 +38,9 @@ public class Item {
     @Column(length = 500)
     private String description;
 
-    @Column(length = 20)
-    private String unit = "pcs";
+    @Convert(converter = UnitTypeConverter.class)
+    @Column(name = "unit", length = 20, nullable = false)
+    private UnitType unitType = UnitType.PCS;
 
     @Column(nullable = false)
     private Boolean isActive = true;

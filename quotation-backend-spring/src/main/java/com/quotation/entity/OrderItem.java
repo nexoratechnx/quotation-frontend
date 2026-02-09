@@ -19,15 +19,16 @@ public class OrderItem {
     @Column(nullable = false)
     private String itemName;
 
-    @Column(nullable = false)
-    private Integer quantity;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "unit_type", length = 20, nullable = false)
+    private Item.UnitType unitType;
+
+    @Column(name = "unit_value", nullable = false, precision = 12, scale = 4)
+    private BigDecimal unitValue;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
-    @Column(length = 20)
-    private String unit;
-
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal total;
+    @Column(nullable = false, precision = 12, scale = 2)
+    private BigDecimal amount;
 }

@@ -78,9 +78,10 @@ export default function PrintInvoice({
           <tr>
             <th>#</th>
             <th>Item</th>
+            <th>Unit Type</th>
+            <th>Unit Value</th>
             <th>Price</th>
-            <th>Qty</th>
-            <th>Total</th>
+            <th>Amount</th>
           </tr>
         </thead>
 
@@ -89,9 +90,10 @@ export default function PrintInvoice({
             <tr key={item.id}>
               <td>{index + 1}</td>
               <td>{item.name}</td>
-              <td>₹{item.price.toFixed(2)}</td>
-              <td>{item.qty}</td>
-              <td>₹{(item.price * item.qty).toFixed(2)}</td>
+              <td>{item.unitType || "PCS"}</td>
+              <td>{item.unitValue}</td>
+              <td>₹{Number(item.price).toFixed(2)}</td>
+              <td>₹{(Number(item.amount) || 0).toFixed(2)}</td>
             </tr>
           ))}
         </tbody>

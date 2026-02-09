@@ -145,9 +145,10 @@ export default function OrderDetails() {
                 <tr>
                   <th>#</th>
                   <th>Item</th>
+                  <th>Unit Type</th>
+                  <th>Unit Value</th>
                   <th>Price</th>
-                  <th>Qty</th>
-                  <th>Total</th>
+                  <th>Amount</th>
                 </tr>
               </thead>
               <tbody>
@@ -155,9 +156,10 @@ export default function OrderDetails() {
                   <tr key={`${item.itemId}-${index}`}>
                     <td>{index + 1}</td>
                     <td>{item.itemName}</td>
+                    <td>{item.unitType || "PCS"}</td>
+                    <td>{item.unitValue}</td>
                     <td>₹{Number(item.price).toFixed(2)}</td>
-                    <td>{item.quantity}</td>
-                    <td>₹{Number(item.total).toFixed(2)}</td>
+                    <td>₹{Number(item.amount).toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -205,9 +207,10 @@ export default function OrderDetails() {
             <tr>
               <th>#</th>
               <th>Item</th>
+              <th>Unit Type</th>
+              <th>Unit Value</th>
               <th>Price</th>
-              <th>Qty</th>
-              <th>Total</th>
+              <th>Amount</th>
             </tr>
           </thead>
           <tbody>
@@ -215,9 +218,10 @@ export default function OrderDetails() {
               <tr key={`${item.itemId}-${index}`}>
                 <td>{index + 1}</td>
                 <td>{item.itemName}</td>
+                <td>{item.unitType || "PCS"}</td>
+                <td>{item.unitValue}</td>
                 <td>₹{Number(item.price).toFixed(2)}</td>
-                <td>{item.quantity}</td>
-                <td>₹{Number(item.total).toFixed(2)}</td>
+                <td>₹{Number(item.amount).toFixed(2)}</td>
               </tr>
             ))}
           </tbody>
