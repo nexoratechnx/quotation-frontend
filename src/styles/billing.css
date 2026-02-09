@@ -26,11 +26,32 @@
 }
 
 .card {
-  @apply bg-white border border-gray-200 rounded-md p-4;
+  @apply bg-white border border-gray-200 rounded-lg shadow-sm;
+  padding: 1rem 1.25rem;
 }
 
 .card-title {
-  @apply text-sm font-semibold text-gray-700 mb-3;
+  @apply text-sm font-semibold text-gray-700;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+/* Item List card: consistent alignment */
+section.card.col-span-8 {
+  display: flex;
+  flex-direction: column;
+}
+
+section.card.col-span-8 .item-row,
+section.card.col-span-8 .item-row-head {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+section.card.col-span-8 .item-placeholder-wrap {
+  margin-top: 1rem;
+  padding-top: 0.5rem;
 }
 
 .input {

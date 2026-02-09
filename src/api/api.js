@@ -147,6 +147,14 @@ export const addCategory = async (payload) => {
   return handleResponse(res);
 };
 
+export const deleteCategory = async (id) => {
+  const res = await fetch(`${BASE_URL}/categories/${id}`, {
+    method: "DELETE",
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) await handleResponse(res);
+};
+
 // Item APIs
 export const fetchItems = async ({ search = "", categoryId = "" } = {}) => {
   const params = new URLSearchParams();
@@ -166,6 +174,23 @@ export const addItem = async (payload) => {
     body: JSON.stringify(payload),
   });
   return handleResponse(res);
+};
+
+export const updateItem = async (id, payload) => {
+  const res = await fetch(`${BASE_URL}/items/${id}`, {
+    method: "PUT",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+  return handleResponse(res);
+};
+
+export const deleteItem = async (id) => {
+  const res = await fetch(`${BASE_URL}/items/${id}`, {
+    method: "DELETE",
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) await handleResponse(res);
 };
 
 // Order APIs
