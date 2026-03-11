@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+﻿import { useEffect, useRef } from "react";
 
 export default function PrintInvoice({
   customer,
@@ -23,8 +23,7 @@ export default function PrintInvoice({
   useEffect(() => {
     if (!isPreview) {
       console.log('📋 Starting print process...');
-      
-      // Handle the print event
+
       const handlePrintEvent = () => {
         console.log('✅ Print dialog closed');
         setTimeout(() => {
@@ -34,16 +33,14 @@ export default function PrintInvoice({
           }
         }, 500);
       };
-      
-      // Wait for DOM to fully render before printing
+
       const timer = setTimeout(() => {
         console.log('🖨️ Calling window.print()');
         window.print();
       }, 1500);
-      
-      // Listen for print completion
+
       window.addEventListener('afterprint', handlePrintEvent);
-      
+
       return () => {
         clearTimeout(timer);
         window.removeEventListener('afterprint', handlePrintEvent);
@@ -72,7 +69,7 @@ export default function PrintInvoice({
         </div>
       </div>
 
-   
+
       <table className="invoice-table">
         <thead>
           <tr>
@@ -99,7 +96,7 @@ export default function PrintInvoice({
         </tbody>
       </table>
 
-    
+
       <div className="invoice-summary">
         <div>
           <span>Subtotal</span>
@@ -117,7 +114,7 @@ export default function PrintInvoice({
         </div>
       </div>
 
-  
+
       <div className="invoice-footer">
         <p>Thank you for your business</p>
       </div>
