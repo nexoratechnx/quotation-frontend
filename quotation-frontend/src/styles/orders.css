@@ -1,121 +1,127 @@
+/* ========================================================
+   ORDERS.CSS — Premium Indigo Theme
+   ======================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 .orders-page {
   min-height: 100vh;
-  background: #f3f4f6;
-  padding: 24px;
+  background: #f0f2f5;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Inter', sans-serif;
 }
 
-/* Header – same style as order details */
+/* ── Header ─────────────────────────────────────────────── */
 .orders-header {
+  height: 64px;
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #4338ca 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 24px;
-  padding: 16px 20px;
-  background: #fff;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  padding: 0 24px;
+  box-shadow: 0 2px 12px rgba(31, 27, 75, 0.35);
+  position: sticky;
+  top: 0;
+  z-index: 40;
 }
 
 .orders-header-left {
   display: flex;
   align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.orders-back {
-  padding: 8px 14px;
-  font-size: 14px;
-  color: #4b5563;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-}
-
-.orders-back:hover {
-  background: #f3f4f6;
-  color: #111827;
-}
-
-.orders-title {
-  margin: 0;
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: #111827;
+  gap: 14px;
 }
 
 .orders-header-right {
   display: flex;
   align-items: center;
   gap: 12px;
-  flex-wrap: wrap;
+}
+
+.orders-back {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 7px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.orders-back:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.orders-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.01em;
 }
 
 .orders-hint {
-  font-size: 12px;
-  color: #6b7280;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
 }
 
-/* Card – same as order details */
+/* ── Card ───────────────────────────────────────────────── */
 .orders-card {
+  margin: 20px 24px;
   background: #fff;
-  border-radius: 12px;
   border: 1px solid #e5e7eb;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+  padding: 20px 22px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05), 0 4px 16px rgba(0, 0, 0, 0.04);
+  flex: 1;
 }
 
+/* ── Search ──────────────────────────────────────────────── */
 .orders-search-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 10px;
+  margin-bottom: 18px;
 }
 
 .orders-search-input {
   flex: 1;
-  max-width: 360px;
   padding: 10px 14px;
-  font-size: 14px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  background: #fff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 9px;
+  font-size: 13.5px;
+  font-family: 'Inter', sans-serif;
   color: #111827;
-  transition: border-color 0.15s;
-}
-
-.orders-search-input::placeholder {
-  color: #9ca3af;
+  background: #fafafa;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .orders-search-input:focus {
-  outline: none;
-  border-color: #4f46e5;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  border-color: #6366f1;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 .orders-search-clear {
   padding: 8px 14px;
-  font-size: 13px;
-  color: #6b7280;
-  background: #f9fafb;
+  background: #f3f4f6;
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  border-radius: 7px;
+  font-size: 12.5px;
+  font-family: 'Inter', sans-serif;
+  color: #374151;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
 }
 
 .orders-search-clear:hover {
-  background: #f3f4f6;
-  color: #111827;
+  background: #e5e7eb;
 }
 
-/* Table */
+/* ── Table ───────────────────────────────────────────────── */
 .orders-table-wrap {
   overflow-x: auto;
 }
@@ -123,19 +129,24 @@
 .orders-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
-}
-
-.orders-table th,
-.orders-table td {
-  padding: 12px 14px;
-  text-align: left;
-  border-bottom: 1px solid #e5e7eb;
+  font-size: 13.5px;
 }
 
 .orders-table th {
-  background: #f9fafb;
-  font-weight: 600;
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: #111827;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid #e5e7eb;
+  background: #fff;
+}
+
+.orders-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #f3f4f6;
   color: #374151;
 }
 
@@ -145,66 +156,59 @@
 }
 
 .orders-table tbody tr:hover {
-  background: #f9fafb;
+  background: #f5f5ff;
 }
 
 .orders-table tbody tr.active {
   background: #eef2ff;
 }
 
-.orders-table td:last-child {
-  white-space: nowrap;
-}
-
-/* Status badges – same as order details */
+/* ── Status badge ────────────────────────────────────────── */
 .orders-status-badge {
   display: inline-block;
-  padding: 4px 10px;
-  font-size: 12px;
-  font-weight: 600;
-  border-radius: 6px;
-  text-transform: capitalize;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
-.orders-status-badge.status-pending {
-  background: #fef3c7;
-  color: #b45309;
-}
-
-.orders-status-badge.status-completed {
+.status-printed {
   background: #d1fae5;
   color: #065f46;
 }
 
-.orders-status-badge.status-confirmed {
-  background: #dbeafe;
-  color: #1e40af;
+.status-pending {
+  background: #fef9c3;
+  color: #713f12;
 }
 
-.orders-status-badge.status-cancelled {
+.status-cancelled {
   background: #fee2e2;
-  color: #b91c1c;
+  color: #991b1b;
 }
 
-.orders-status-badge.status-draft {
+.status-draft {
   background: #f3f4f6;
-  color: #4b5563;
+  color: #6b7280;
 }
 
-/* Loading & empty & error */
+/* ── States ─────────────────────────────────────────────── */
 .orders-loading {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 200px;
-  gap: 16px;
+  gap: 14px;
   color: #6b7280;
+  font-size: 14px;
 }
 
 .orders-spinner {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border: 3px solid #e5e7eb;
   border-top-color: #4f46e5;
   border-radius: 50%;
@@ -218,21 +222,18 @@
 }
 
 .orders-empty {
-  padding: 40px 20px;
+  padding: 48px 20px;
   text-align: center;
-  color: #6b7280;
+  color: #9ca3af;
   font-size: 14px;
 }
 
 .orders-error {
-  padding: 20px;
-  text-align: center;
+  margin-bottom: 16px;
+  padding: 12px 16px;
   background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 9px;
   color: #b91c1c;
-  border-radius: 8px;
-  margin: 10px 0;
-}
-
-.orders-error p {
-  margin: 0;
+  font-size: 13px;
 }

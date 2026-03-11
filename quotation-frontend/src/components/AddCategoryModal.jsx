@@ -1,4 +1,4 @@
-import "../styles/modal.css";
+﻿import "../styles/modal.css";
 import { useEffect, useRef, useState } from "react";
 import { addCategory, fetchCategories, deleteCategory } from "../api/api";
 

@@ -1,20 +1,71 @@
+/* ── Billing Summary ──────────────────────────────────── */
 
 .summary-row {
-  @apply flex justify-between text-sm py-1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13.5px;
+  padding: 8px 0;
+  color: #374151;
+  border-bottom: 1px dashed #f3f4f6;
+}
+
+.summary-row span:first-child {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.summary-row span:last-child {
+  font-weight: 600;
+  color: #111827;
 }
 
 .summary-label {
-  @apply text-gray-600;
+  color: #6b7280;
 }
 
 .summary-value {
-  @apply font-medium;
+  font-weight: 600;
 }
 
 .summary-total {
-  @apply flex justify-between text-base font-semibold border-t border-gray-200 pt-3 mt-3;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 700;
+  border-top: 2px solid #4f46e5;
+  padding-top: 14px;
+  margin-top: 12px;
+  color: #1e1b4b;
+}
+
+.summary-total span:last-child {
+  color: #4f46e5;
+  font-size: 18px;
 }
 
 .print-btn {
-  @apply bg-blue-600 text-white px-5 py-2 rounded text-sm hover:bg-blue-700;
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  color: #fff;
+  padding: 10px 24px;
+  border-radius: 9px;
+  font-size: 13.5px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.35);
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.print-btn:hover:not(:disabled) {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.print-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }

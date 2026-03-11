@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+﻿import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/login.jsx";
 import Billing from "./pages/billing.jsx";
 import Orders from "./pages/orders.jsx";
@@ -6,7 +6,6 @@ import OrderDetails from "./pages/OrderDetails.jsx";
 import Items from "./pages/items.jsx";
 import { isAuthenticated } from "./api/api";
 
-// Protected Route Component
 function ProtectedRoute({ children }) {
   return isAuthenticated() ? children : <Navigate to="/" replace />;
 }

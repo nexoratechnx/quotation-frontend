@@ -1,13 +1,14 @@
-import "../styles/items-page.css";
+﻿import "../styles/items-page.css";
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchItems, fetchCategories, updateItem, deleteItem } from "../api/api";
+import { fetchItems, fetchCategories, fetchPipeItems, updateItem, deleteItem } from "../api/api";
 
 export default function Items() {
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
+  const [pipeItems, setPipeItems] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [categoryId, setCategoryId] = useState("");
+  const [activeTab, setActiveTab] = useState("ALL");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -23,12 +24,18 @@ export default function Items() {
       setLoading(true);
       setError(null);
       try {
-        const itemsData = await fetchItems({ categoryId: categoryId || undefined });
-        setItems(Array.isArray(itemsData) ? itemsData : []);
+        const activeCategoryId = (activeTab === "ALL" || activeTab === "PIPES")
+          ? undefined
+          : categories.find((c) => c.name === activeTab)?.id;
+        const [itemsData, pipeData] = await Promise.all([
+          fetchItems({ categoryId: activeCategoryId }),
+          fetchPipeItems().catch(() => []),
+        ]);
+        const normalItems = Array.isArray(itemsData) ? itemsData : [];
+        setItems(normalItems);
+        setPipeItems(Array.isArray(pipeData) ? pipeData : []);
         const initial = {};
-        itemsData?.forEach((it) => {
-          initial[it.id] = Number(it.price);
-        });
+        normalItems.forEach((it) => { initial[it.id] = Number(it.price); });
         initialPricesRef.current = initial;
       } catch (err) {
         console.error("Failed to load:", err);
@@ -38,13 +45,11 @@ export default function Items() {
       }
     };
     load();
-  }, [categoryId]);
+  }, [activeTab, categories]);
 
   const updatePrice = (id, value) => {
     const num = value === "" ? 0 : Number(value) || 0;
-    setItems((prev) =>
-      prev.map((it) => (it.id === id ? { ...it, price: num } : it))
-    );
+    setItems((prev) => prev.map((it) => (it.id === id ? { ...it, price: num } : it)));
   };
 
   const getDirtyItems = () =>
@@ -97,6 +102,20 @@ export default function Items() {
     }
   };
 
+  const pipeVariants = [...new Set(pipeItems.map((p) => p.variant).filter(Boolean))];
+  const pipeVariantTabs = pipeVariants.map((v) => `Pipe ${v}`);
+  const categoryTabs = ["ALL", ...categories.map((c) => c.name), ...pipeVariantTabs];
+
+  const isPipeTab = activeTab.startsWith("Pipe ");
+  const activeVariant = isPipeTab ? activeTab.replace("Pipe ", "") : null;
+  const visibleNormalItems = isPipeTab ? [] : items;
+  const visiblePipeItems = activeTab === "ALL"
+    ? pipeItems
+    : isPipeTab
+      ? pipeItems.filter((p) => p.variant === activeVariant)
+      : [];
+  const totalCount = visibleNormalItems.length + visiblePipeItems.length;
+
   return (
     <div className="items-page">
       <header className="items-header">
@@ -110,6 +129,12 @@ export default function Items() {
             ← Back
           </button>
           <h1 className="items-title">Items</h1>
+          {!loading && (
+            <span style={{ fontSize: '13px', color: '#6b7280' }}>
+              {items.length} item{items.length !== 1 ? 's' : ''}
+              {visiblePipeItems.length > 0 && ` · ${visiblePipeItems.length} pipe variant${visiblePipeItems.length !== 1 ? 's' : ''}`}
+            </span>
+          )}
         </div>
         <div className="items-header-right">
           <button
@@ -129,23 +154,34 @@ export default function Items() {
       </header>
 
       <section className="items-card">
-        <div className="items-toolbar">
-          <label className="items-filter-label">
-            Category
-            <select
-              className="items-filter-select"
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              aria-label="Filter by category"
+        {/* Category pill tabs */}
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '6px',
+          marginBottom: '16px',
+        }}>
+          {categoryTabs.map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              onClick={() => setActiveTab(tab)}
+              style={{
+                padding: '5px 14px',
+                fontSize: '12px',
+                fontWeight: 600,
+                borderRadius: '20px',
+                border: '1.5px solid',
+                cursor: 'pointer',
+                transition: 'all 0.15s',
+                borderColor: activeTab === tab ? '#4f46e5' : '#e5e7eb',
+                background: activeTab === tab ? '#4f46e5' : '#f9fafb',
+                color: activeTab === tab ? '#fff' : '#374151',
+              }}
             >
-              <option value="">All categories</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </label>
+              {tab}
+            </button>
+          ))}
         </div>
 
         {error && (
@@ -162,31 +198,36 @@ export default function Items() {
             </div>
           )}
 
-          {!loading && items.length === 0 && (
+          {!loading && totalCount === 0 && (
             <div className="items-empty">
-              {categoryId
-                ? "No items in this category."
-                : "No items yet. Add items from Billing."}
+              {isPipeTab
+                ? `No pipe variants found for ${activeVariant}.`
+                : activeTab !== "ALL"
+                  ? `No items in "${activeTab}" category.`
+                  : "No items yet. Add items from Billing."}
             </div>
           )}
 
-          {!loading && items.length > 0 && (
+          {!loading && totalCount > 0 && (
             <table className="items-table">
               <thead>
                 <tr>
                   <th>Name</th>
-                  <th>Category</th>
+                  <th>Category / Type</th>
                   <th>Per</th>
+                  <th>Details</th>
                   <th>Price</th>
                   <th>Action</th>
                 </tr>
               </thead>
               <tbody>
-                {items.map((it) => (
-                  <tr key={it.id}>
+                {/* ── Regular items ── */}
+                {visibleNormalItems.map((it) => (
+                  <tr key={`item-${it.id}`}>
                     <td className="items-cell-name">{it.name}</td>
                     <td>{it.category?.name ?? "—"}</td>
                     <td className="items-cell-per">{it.unitType || "PCS"}</td>
+                    <td style={{ color: '#9ca3af', fontSize: '12px' }}>—</td>
                     <td>
                       <input
                         type="number"
@@ -208,6 +249,34 @@ export default function Items() {
                         Delete
                       </button>
                     </td>
+                  </tr>
+                ))}
+
+                {/* ── Pipe chart items ── */}
+                {visiblePipeItems.map((p) => (
+                  <tr key={`pipe-${p.id}`} style={{ background: '#fafbff' }}>
+                    <td className="items-cell-name">
+                      <span>{p.variant} {p.size}</span>
+                      <span style={{
+                        marginLeft: '8px',
+                        fontSize: '10px',
+                        fontWeight: '600',
+                        background: '#ede9fe',
+                        color: '#6d28d9',
+                        borderRadius: '4px',
+                        padding: '1px 6px',
+                        textTransform: 'uppercase',
+                      }}>PIPE</span>
+                    </td>
+                    <td style={{ color: '#6b7280' }}>Pipe — {p.variant}</td>
+                    <td className="items-cell-per">KG</td>
+                    <td style={{ fontSize: '12px', color: '#6b7280' }}>
+                      t:{p.thickness}mm · {p.weightPerMeter} kg/m
+                    </td>
+                    <td style={{ fontSize: '12px', color: '#9ca3af', fontStyle: 'italic' }}>
+                      Weight-based
+                    </td>
+                    <td style={{ fontSize: '12px', color: '#9ca3af' }}>—</td>
                   </tr>
                 ))}
               </tbody>

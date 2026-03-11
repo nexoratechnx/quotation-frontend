@@ -134,17 +134,30 @@ public class OrderService {
     }
 
     private OrderItem createOrderItem(OrderItemRequest request) {
-        Item item = itemRepository.findById(request.getItemId())
-                .orElseThrow(() -> new ResourceNotFoundException("Item", "id", request.getItemId()));
-
         OrderItem orderItem = new OrderItem();
-        orderItem.setItemId(item.getId());
-        orderItem.setItemName(item.getName());
-        orderItem.setUnitType(item.getUnitType());
-        orderItem.setUnitValue(request.getUnitValue());
-        BigDecimal sellingPrice = request.getPrice() != null ? request.getPrice() : item.getPrice();
-        orderItem.setPrice(sellingPrice);
-        orderItem.setAmount(sellingPrice.multiply(request.getUnitValue()));
+        
+        if (Boolean.TRUE.equals(request.getIsPipe()) || request.getItemId() == null) {
+            // It's a custom pipe item
+            orderItem.setItemId(null);
+            orderItem.setItemName(request.getItemName());
+            orderItem.setUnitType(request.getUnitType() != null ? request.getUnitType() : Item.UnitType.KG);
+            orderItem.setUnitValue(request.getUnitValue());
+            BigDecimal sellingPrice = request.getPrice() != null ? request.getPrice() : BigDecimal.ZERO;
+            orderItem.setPrice(sellingPrice);
+            orderItem.setAmount(sellingPrice.multiply(request.getUnitValue()));
+        } else {
+            // It's a standard DB item
+            Item item = itemRepository.findById(request.getItemId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Item", "id", request.getItemId()));
+
+            orderItem.setItemId(item.getId());
+            orderItem.setItemName(item.getName());
+            orderItem.setUnitType(item.getUnitType());
+            orderItem.setUnitValue(request.getUnitValue());
+            BigDecimal sellingPrice = request.getPrice() != null ? request.getPrice() : item.getPrice();
+            orderItem.setPrice(sellingPrice);
+            orderItem.setAmount(sellingPrice.multiply(request.getUnitValue()));
+        }
 
         return orderItem;
     }

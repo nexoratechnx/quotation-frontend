@@ -1,16 +1,62 @@
+/* ── Customer / Employee dropdowns ──────────────────────── */
 
 .dropdown {
-  @apply absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded shadow-sm;
+  position: absolute;
+  z-index: 20;
+  margin-top: 4px;
+  width: 100%;
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10);
+  overflow: hidden;
 }
 
 .dropdown-item {
-  @apply px-3 py-2 text-sm cursor-pointer hover:bg-gray-100;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  cursor: pointer;
+  color: #374151;
+  border-bottom: 1px solid #f9fafb;
+  transition: background 0.12s, color 0.12s;
+}
+
+.dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.dropdown-item:hover {
+  background: #f0f0ff;
+  color: #4f46e5;
+}
+
+.dropdown-item.create {
+  color: #4f46e5;
+  font-weight: 600;
+  background: #f5f3ff;
+  font-size: 13px;
+}
+
+.dropdown-item.create:hover {
+  background: #ede9fe;
 }
 
 .dropdown-header {
-  @apply flex items-center justify-between px-3 py-2 border-b border-gray-200 text-xs text-gray-500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 11px;
+  color: #9ca3af;
 }
 
 .create-btn {
-  @apply text-blue-600 hover:text-blue-700 font-medium;
+  color: #4f46e5;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.create-btn:hover {
+  color: #4338ca;
 }

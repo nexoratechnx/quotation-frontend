@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class OrderItem {
 
-    @Column(name = "item_id", nullable = false)
+    @Column(name = "item_id")
     private Long itemId;
 
     @Column(nullable = false)

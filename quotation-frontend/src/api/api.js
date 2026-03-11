@@ -1,10 +1,7 @@
-// Use environment variable for API base URL, fallback to localhost for development
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
+﻿const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
 
-// Log the API base URL for debugging
 console.log('🔗 API Base URL:', BASE_URL);
 
-// Helper function to get auth headers
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
   return {
@@ -13,34 +10,29 @@ const getAuthHeaders = () => {
   };
 };
 
-// Helper function to handle API responses with better error handling
 const handleResponse = async (response) => {
   if (!response.ok) {
-    // Handle 401 Unauthorized - token might be expired
     if (response.status === 401) {
       console.warn('⚠️ Unauthorized (401) - Logging out...');
       logout();
       window.location.href = '/';
       throw new Error('Session expired. Please login again.');
     }
-    
-    // Try to parse error message from response
+
     let errorMessage = `Request failed with status ${response.status}`;
     try {
       const errorData = await response.json();
       errorMessage = errorData.message || errorMessage;
       console.error('❌ API Error:', errorMessage, errorData);
     } catch (e) {
-      // If response is not JSON, use default message
       console.error('❌ API Error:', errorMessage);
     }
-    
+
     throw new Error(errorMessage);
   }
   return response.json();
 };
 
-// Authentication APIs
 export const register = async (payload) => {
   const res = await fetch(`${BASE_URL}/auth/register`, {
     method: "POST",
@@ -80,7 +72,6 @@ export const isAuthenticated = () => {
   return !!localStorage.getItem('token');
 };
 
-// Customer APIs
 export const fetchCustomers = async (search = "") => {
   const res = await fetch(`${BASE_URL}/customers?search=${search}`, {
     headers: getAuthHeaders()
@@ -113,7 +104,6 @@ export const updateCustomer = async (id, payload) => {
   return handleResponse(res);
 };
 
-// Employee APIs
 export const fetchEmployees = async () => {
   const res = await fetch(`${BASE_URL}/employees`, {
     headers: getAuthHeaders()
@@ -130,7 +120,6 @@ export const addEmployee = async (payload) => {
   return handleResponse(res);
 };
 
-// Category APIs
 export const fetchCategories = async () => {
   const res = await fetch(`${BASE_URL}/categories`, {
     headers: getAuthHeaders()
@@ -155,12 +144,11 @@ export const deleteCategory = async (id) => {
   if (!res.ok) await handleResponse(res);
 };
 
-// Item APIs
 export const fetchItems = async ({ search = "", categoryId = "" } = {}) => {
   const params = new URLSearchParams();
   if (search) params.append('search', search);
   if (categoryId) params.append('categoryId', categoryId);
-  
+
   const res = await fetch(`${BASE_URL}/items?${params.toString()}`, {
     headers: getAuthHeaders()
   });
@@ -193,7 +181,6 @@ export const deleteItem = async (id) => {
   if (!res.ok) await handleResponse(res);
 };
 
-// Order APIs
 export const createOrder = async (payload) => {
   const res = await fetch(`${BASE_URL}/orders`, {
     method: "POST",
@@ -222,6 +209,27 @@ export const updateOrderStatus = async (orderId, status) => {
     method: "PATCH",
     headers: getAuthHeaders(),
     body: JSON.stringify({ status })
+  });
+  return handleResponse(res);
+};
+
+export const fetchPipeItems = async () => {
+  const res = await fetch(`${BASE_URL}/pipe/all`, {
+    headers: getAuthHeaders()
+  });
+  return handleResponse(res);
+};
+
+export const calculatePipeWeight = async ({ variant, size, thickness, length }) => {
+  const res = await fetch(`${BASE_URL}/pipe/calculate`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({
+      variant: String(variant),
+      size: String(size),
+      thickness: String(thickness),
+      length: String(length)
+    })
   });
   return handleResponse(res);
 };

@@ -97,4 +97,13 @@ public class PipeCalculationController {
 
         return ResponseEntity.ok(thickness);
     }
+
+    // ==============================
+    // 5️⃣ GET ALL PIPE CHART ENTRIES
+    // ==============================
+    @GetMapping("/all")
+    public ResponseEntity<List<PipeWeightChart>> getAllPipeChartEntries() {
+        List<PipeWeightChart> all = pipeWeightChartRepository.findAll();
+        return ResponseEntity.ok(all);
+    }
 }

@@ -1,54 +1,91 @@
+/* ========================================================
+   ITEMS.CSS — Item row grid for billing page
+   ======================================================== */
 
-/* Item list: same grid for header and rows so columns align */
-/* Column order: Name | Unit Value | Price | Per | Amount | Eye | Del */
+/* Column order: Name | Qty | Weight | Price | Unit | Amount | Eye | Del */
 .item-row {
   display: grid;
-  grid-template-columns: minmax(120px, 1fr) 88px 88px 56px 88px 44px 72px;
-  gap: 10px 14px;
-  align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid #e5e7eb;
-  min-height: 40px;
+  grid-template-columns: minmax(130px, 1fr) 72px 82px 90px 52px 90px 36px 64px;
+  gap: 0 16px;
+  align-items: start;
+  padding: 10px 0;
+  border-bottom: 1px solid #f3f4f6;
+  transition: background 0.1s;
+}
+
+.item-row:hover {
+  background: #fafbff;
 }
 
 .item-row-head {
-  padding: 6px 0 8px 0;
-  border-bottom: 2px solid #d1d5db;
+  align-items: center;
+  padding: 8px 0 10px 0;
+  border-bottom: 2px solid #e5e7eb;
   font-size: 11px;
-  font-weight: 600;
-  color: #6b7280;
+  font-weight: 700;
+  color: #111827;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
 }
 
-.item-row-head .item-col-name { text-align: left; }
-.item-row-head .item-col-qty,
-.item-row-head .item-col-price,
-.item-row-head .item-col-amount { text-align: right; }
-.item-row-head .item-col-unit { text-align: center; }
-.item-row-head .item-col-action { text-align: right; }
+.item-row-head .item-col-name {
+  text-align: left;
+}
+
+.item-row-head .item-col-qty {
+  text-align: right;
+}
+
+.item-row-head .item-col-weight {
+  text-align: right;
+}
+
+.item-row-head .item-col-price {
+  text-align: right;
+}
+
+.item-row-head .item-col-unit {
+  text-align: center;
+}
+
+.item-row-head .item-col-amount {
+  text-align: right;
+}
+
+.item-row-head .item-col-action {
+  text-align: right;
+}
 
 .item-col-name {
   min-width: 0;
-  font-size: 14px;
+  font-size: 13.5px;
+  font-weight: 500;
   color: #111827;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   padding-right: 4px;
+  padding-top: 4px;
+}
+
+.item-col-weight {
+  min-width: 0;
+  font-size: 13px;
+  text-align: right;
+  padding-top: 4px;
+  color: #374151;
 }
 
 .item-col-unit {
   min-width: 0;
-  font-size: 13px;
-  color: #374151;
+  font-size: 12px;
+  color: #6b7280;
   text-align: center;
+  font-weight: 600;
 }
 
 .item-col-unit-readonly {
-  font-size: 13px;
-  color: #374151;
-  font-weight: 500;
+  font-size: 12px;
+  color: #6366f1;
+  font-weight: 600;
+  text-align: center;
 }
 
 .item-col-price {
@@ -66,7 +103,7 @@
 
 .item-col-amount {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   color: #111827;
   text-align: right;
 }
@@ -94,11 +131,25 @@
 }
 
 .item-input {
-  @apply border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:border-blue-500;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  color: #111827;
+  background: #fafafa;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
   box-sizing: border-box;
 }
 
-/* Placeholder "Search & Select Item" – always below added items */
+.item-input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  background: #fff;
+}
+
+/* ── Placeholder button ─────────────────────────────────── */
 .item-placeholder-wrap {
   margin-top: 12px;
   position: relative;
@@ -106,14 +157,38 @@
 }
 
 .item-placeholder-btn {
-  @apply w-full text-left px-3 py-2.5 border border-dashed border-gray-300 rounded text-gray-500 bg-gray-50;
-  @apply hover:bg-gray-100 hover:border-gray-400 hover:text-gray-700;
-  font-size: 14px;
+  width: 100%;
+  text-align: left;
+  padding: 11px 14px;
+  border: 1.5px dashed #d1d5db;
+  border-radius: 9px;
+  font-size: 13.5px;
+  color: #9ca3af;
+  background: #fafafa;
   cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  font-family: 'Inter', sans-serif;
 }
 
+.item-placeholder-btn:hover {
+  background: #f0f0ff;
+  border-color: #a5b4fc;
+  color: #4f46e5;
+}
+
+/* ── Item dropdown ──────────────────────────────────────── */
 .item-dropdown {
-  @apply absolute z-20 mt-1 left-0 right-0 bg-white border border-gray-200 rounded shadow-lg max-h-60 overflow-auto;
+  position: absolute;
+  z-index: 20;
+  margin-top: 4px;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  max-height: 320px;
+  overflow: auto;
 }
 
 .item-dropdown-filter {
@@ -123,10 +198,14 @@
   border-left: none;
   border-right: none;
   border-top: none;
+  border-bottom: 1px solid #f3f4f6;
+  background: #fff;
+  font-size: 13.5px;
+  z-index: 2;
 }
 
 .item-dropdown .item-option {
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid #f9fafb;
 }
 
 .item-dropdown .item-option:last-child {
@@ -134,38 +213,90 @@
 }
 
 .item-option {
-  @apply px-3 py-2 text-sm cursor-pointer hover:bg-gray-100;
+  padding: 9px 14px;
+  font-size: 13.5px;
+  cursor: pointer;
+  color: #374151;
+  transition: background 0.1s, color 0.1s;
 }
 
+.item-option:hover {
+  background: #f0f0ff;
+  color: #4f46e5;
+}
+
+/* ── Qty & price inputs ────────────────────────────────── */
 .qty-input {
-  @apply border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:border-blue-500;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  color: #111827;
+  background: #fafafa;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
   box-sizing: border-box;
 }
 
-.delete-btn {
-  @apply text-red-500 hover:text-red-600 text-sm py-1 px-2;
+.qty-input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  background: #fff;
 }
 
-/* Eye button: show original vs selling price on hover */
+/* ── Delete button ──────────────────────────────────────── */
+.delete-btn {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 6px;
+  color: #ef4444;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.delete-btn:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* ── Eye tooltip ────────────────────────────────────────── */
 .price-eye-btn {
-  @apply inline-flex items-center justify-center w-8 h-8 rounded border border-gray-300 bg-gray-50 cursor-help text-base;
-  @apply hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  cursor: help;
+  font-size: 13px;
   position: relative;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.price-eye-btn:hover {
+  background: #eef2ff;
+  border-color: #c7d2fe;
 }
 
 .price-eye-btn:hover::after {
   content: attr(title);
   position: absolute;
   left: 50%;
-  bottom: 100%;
-  transform: translateX(-50%) translateY(-6px);
-  padding: 8px 10px;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  padding: 7px 10px;
   background: #1f2937;
   color: #fff;
-  font-size: 12px;
+  font-size: 11.5px;
   white-space: nowrap;
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 7px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
   z-index: 30;
   pointer-events: none;
 }
@@ -174,9 +305,9 @@
   content: "";
   position: absolute;
   left: 50%;
-  bottom: 100%;
-  transform: translateX(-50%) translateY(2px);
-  border: 6px solid transparent;
+  bottom: calc(100% + 2px);
+  transform: translateX(-50%);
+  border: 5px solid transparent;
   border-top-color: #1f2937;
   z-index: 31;
   pointer-events: none;

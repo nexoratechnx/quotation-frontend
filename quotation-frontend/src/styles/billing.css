@@ -1,43 +1,128 @@
+/* ========================================================
+   BILLING PAGE — Premium Dark Design
+   ======================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 .billing-page {
-  @apply min-h-screen bg-gray-100 flex flex-col;
+  min-height: 100vh;
+  background: #f0f2f5;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Inter', sans-serif;
 }
 
+/* ── Navbar ─────────────────────────────────────────────── */
 .billing-navbar {
-  @apply h-14 bg-white border-b border-gray-200 flex items-center px-6 gap-4;
+  height: 64px;
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #4338ca 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  gap: 16px;
+  box-shadow: 0 2px 12px rgba(31, 27, 75, 0.35);
+  position: sticky;
+  top: 0;
+  z-index: 40;
 }
 
 .billing-key-hint {
-  @apply text-xs text-gray-500 hidden sm:inline;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .billing-key-hint {
+    display: inline;
+  }
 }
 
 .billing-nav-btn {
-  @apply text-sm text-gray-600 hover:text-blue-600;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.82);
+  padding: 7px 15px;
+  border-radius: 7px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.billing-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 .profile-dropdown {
   right: 0;
   left: auto;
-  min-width: 120px;
+  min-width: 130px;
   width: auto;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
 }
 
+.dropdown-item.text-left.w-full {
+  background: transparent;
+  border: none;
+  font-size: 13px;
+  color: #374151;
+  font-family: 'Inter', sans-serif;
+}
+
+.dropdown-item.text-left.w-full:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+/* ── Main layout grid ──────────────────────────────────── */
 .billing-content {
-  @apply flex-1 p-4 grid grid-cols-12 gap-4;
+  flex: 1;
+  padding: 20px 24px;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 16px;
+  align-items: start;
 }
 
+/* ── Cards ─────────────────────────────────────────────── */
 .card {
-  @apply bg-white border border-gray-200 rounded-lg shadow-sm;
-  padding: 1rem 1.25rem;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 20px 22px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05), 0 4px 16px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.2s;
+}
+
+.card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07), 0 8px 24px rgba(0, 0, 0, 0.06);
 }
 
 .card-title {
-  @apply text-sm font-semibold text-gray-700;
-  margin-bottom: 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid #f3f4f6;
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #f3f4f6;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-/* Item List card: consistent alignment */
+/* ── Item List card alignment ──────────────────────────── */
 section.card.col-span-8 {
   display: flex;
   flex-direction: column;
@@ -54,29 +139,84 @@ section.card.col-span-8 .item-placeholder-wrap {
   padding-top: 0.5rem;
 }
 
+/* ── Generic Input ─────────────────────────────────────── */
 .input {
-  @apply w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500;
+  width: 100%;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 13.5px;
+  font-family: 'Inter', sans-serif;
+  color: #111827;
+  background: #fafafa;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+  outline: none;
+  box-sizing: border-box;
 }
 
-.item-header {
-  @apply grid grid-cols-12 text-xs text-gray-500 border-b pb-2;
+.input:focus {
+  border-color: #6366f1;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
 }
 
+/* ── Exit overlay ──────────────────────────────────────── */
 .exit-overlay {
-  @apply fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 14, 32, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
 }
 
 .exit-box {
-  @apply bg-white border border-gray-300 rounded-md p-6 w-80 text-center;
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px 32px;
+  width: 340px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+  border: 1px solid #e5e7eb;
 }
 
 .exit-box p {
-  @apply text-sm text-gray-700 mb-4;
+  font-size: 14px;
+  color: #374151;
+  margin-bottom: 16px;
+  line-height: 1.6;
 }
 
 .exit-hint {
-  @apply text-xs text-gray-500;
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 10px;
 }
+
 .exit-btn {
-  @apply bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700;
+  background: #4f46e5;
+  color: #fff;
+  padding: 9px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.exit-btn:hover {
+  background: #4338ca;
+}
+
+/* item header helper */
+.item-header {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  font-size: 11px;
+  color: #9ca3af;
+  border-bottom: 1px solid #f3f4f6;
+  padding-bottom: 8px;
 }

@@ -1,28 +1,112 @@
+/* ========================================================
+   LOGIN.CSS — Premium Indigo Theme
+   ======================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 .login-page {
-  @apply min-h-screen flex items-center justify-center;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+  font-family: 'Inter', sans-serif;
+  padding: 24px;
 }
 
 .login-card {
-  @apply bg-white border border-gray-200 rounded-md w-96 p-6;
+  background: #fff;
+  border-radius: 18px;
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 24px 64px rgba(15, 14, 50, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 .login-title {
-  @apply text-lg font-semibold text-center mb-6 text-gray-800;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1e1b4b;
+  text-align: center;
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+
+.login-subtitle {
+  font-size: 13px;
+  color: #9ca3af;
+  text-align: center;
+  margin-bottom: 28px;
 }
 
 .login-input {
-  @apply w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500;
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 9px;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  color: #111827;
+  background: #fafafa;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  display: block;
+  margin-bottom: 14px;
+}
+
+.login-input:focus {
+  border-color: #6366f1;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
 }
 
 .login-button {
-  @apply w-full bg-blue-600 text-white py-2 rounded text-sm font-medium hover:bg-blue-700;
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  font-size: 14.5px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
+  transition: opacity 0.15s, transform 0.1s;
+  margin-top: 6px;
+}
+
+.login-button:hover:not(:disabled) {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.login-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .login-key-hint {
-  @apply text-xs text-gray-500 text-center mt-2;
+  text-align: center;
+  font-size: 11.5px;
+  color: #9ca3af;
+  margin-top: 14px;
 }
 
 .login-footer {
-  @apply text-xs text-gray-500 text-center mt-4;
+  margin-top: 12px;
+}
+
+/* mb helpers */
+.mb-4 {
+  margin-bottom: 0;
+}
+
+.mb-6 {
+  margin-bottom: 0;
 }
