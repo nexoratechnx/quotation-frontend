@@ -1,4 +1,4 @@
-﻿const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
 
 console.log('🔗 API Base URL:', BASE_URL);
 
@@ -228,6 +228,26 @@ export const calculatePipeWeight = async ({ variant, size, thickness, length }) 
       variant: String(variant),
       size: String(size),
       thickness: String(thickness),
+      length: String(length)
+    })
+  });
+  return handleResponse(res);
+};
+
+export const fetchSteelItems = async () => {
+  const res = await fetch(`${BASE_URL}/steel/all`, {
+    headers: getAuthHeaders()
+  });
+  return handleResponse(res);
+};
+
+export const calculateSteelWeight = async ({ type, size, length }) => {
+  const res = await fetch(`${BASE_URL}/steel/calculate`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({
+      type: String(type),
+      size: String(size),
       length: String(length)
     })
   });

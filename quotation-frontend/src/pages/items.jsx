@@ -1,12 +1,13 @@
-﻿import "../styles/items-page.css";
+import "../styles/items-page.css";
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchItems, fetchCategories, fetchPipeItems, updateItem, deleteItem } from "../api/api";
+import { fetchItems, fetchCategories, fetchPipeItems, fetchSteelItems, updateItem, deleteItem } from "../api/api";
 
 export default function Items() {
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [pipeItems, setPipeItems] = useState([]);
+  const [steelItems, setSteelItems] = useState([]);
   const [categories, setCategories] = useState([]);
   const [activeTab, setActiveTab] = useState("ALL");
   const [loading, setLoading] = useState(true);
@@ -27,13 +28,15 @@ export default function Items() {
         const activeCategoryId = (activeTab === "ALL" || activeTab === "PIPES")
           ? undefined
           : categories.find((c) => c.name === activeTab)?.id;
-        const [itemsData, pipeData] = await Promise.all([
+        const [itemsData, pipeData, steelData] = await Promise.all([
           fetchItems({ categoryId: activeCategoryId }),
           fetchPipeItems().catch(() => []),
+          fetchSteelItems().catch(() => []),
         ]);
         const normalItems = Array.isArray(itemsData) ? itemsData : [];
         setItems(normalItems);
         setPipeItems(Array.isArray(pipeData) ? pipeData : []);
+        setSteelItems(Array.isArray(steelData) ? steelData : []);
         const initial = {};
         normalItems.forEach((it) => { initial[it.id] = Number(it.price); });
         initialPricesRef.current = initial;
@@ -104,17 +107,26 @@ export default function Items() {
 
   const pipeVariants = [...new Set(pipeItems.map((p) => p.variant).filter(Boolean))];
   const pipeVariantTabs = pipeVariants.map((v) => `Pipe ${v}`);
-  const categoryTabs = ["ALL", ...categories.map((c) => c.name), ...pipeVariantTabs];
+  const steelTypes = [...new Set(steelItems.map((s) => s.type).filter(Boolean))];
+  const steelTypeTabs = steelTypes.map((t) => `MS ${t}`);
+  const categoryTabs = ["ALL", ...categories.map((c) => c.name), ...pipeVariantTabs, ...steelTypeTabs];
 
   const isPipeTab = activeTab.startsWith("Pipe ");
+  const isSteelTab = activeTab.startsWith("MS ") && steelTypeTabs.includes(activeTab);
   const activeVariant = isPipeTab ? activeTab.replace("Pipe ", "") : null;
-  const visibleNormalItems = isPipeTab ? [] : items;
+  const activeSteelType = isSteelTab ? activeTab.replace("MS ", "") : null;
+  const visibleNormalItems = (isPipeTab || isSteelTab) ? [] : items;
   const visiblePipeItems = activeTab === "ALL"
     ? pipeItems
     : isPipeTab
       ? pipeItems.filter((p) => p.variant === activeVariant)
       : [];
-  const totalCount = visibleNormalItems.length + visiblePipeItems.length;
+  const visibleSteelItems = activeTab === "ALL"
+    ? steelItems
+    : isSteelTab
+      ? steelItems.filter((s) => s.type === activeSteelType)
+      : [];
+  const totalCount = visibleNormalItems.length + visiblePipeItems.length + visibleSteelItems.length;
 
   return (
     <div className="items-page">
@@ -133,6 +145,7 @@ export default function Items() {
             <span style={{ fontSize: '13px', color: '#6b7280' }}>
               {items.length} item{items.length !== 1 ? 's' : ''}
               {visiblePipeItems.length > 0 && ` · ${visiblePipeItems.length} pipe variant${visiblePipeItems.length !== 1 ? 's' : ''}`}
+              {visibleSteelItems.length > 0 && ` · ${visibleSteelItems.length} steel section${visibleSteelItems.length !== 1 ? 's' : ''}`}
             </span>
           )}
         </div>
@@ -272,6 +285,34 @@ export default function Items() {
                     <td className="items-cell-per">KG</td>
                     <td style={{ fontSize: '12px', color: '#6b7280' }}>
                       t:{p.thickness}mm · {p.weightPerMeter} kg/m
+                    </td>
+                    <td style={{ fontSize: '12px', color: '#9ca3af', fontStyle: 'italic' }}>
+                      Weight-based
+                    </td>
+                    <td style={{ fontSize: '12px', color: '#9ca3af' }}>—</td>
+                  </tr>
+                ))}
+
+                {/* ── Steel chart items ── */}
+                {visibleSteelItems.map((s) => (
+                  <tr key={`steel-${s.id}`} style={{ background: '#f0fdf4' }}>
+                    <td className="items-cell-name">
+                      <span>MS {s.size}</span>
+                      <span style={{
+                        marginLeft: '8px',
+                        fontSize: '10px',
+                        fontWeight: '600',
+                        background: '#dcfce7',
+                        color: '#15803d',
+                        borderRadius: '4px',
+                        padding: '1px 6px',
+                        textTransform: 'uppercase',
+                      }}>STEEL</span>
+                    </td>
+                    <td style={{ color: '#6b7280' }}>Steel — {s.type}</td>
+                    <td className="items-cell-per">KG</td>
+                    <td style={{ fontSize: '12px', color: '#6b7280' }}>
+                      {Number(s.weightPerMeter).toFixed(3)} kg/m
                     </td>
                     <td style={{ fontSize: '12px', color: '#9ca3af', fontStyle: 'italic' }}>
                       Weight-based

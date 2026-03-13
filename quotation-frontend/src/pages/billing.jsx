@@ -1,4 +1,4 @@
-﻿import "../styles/billing.css";
+import "../styles/billing.css";
 import "../styles/customer.css";
 import "../styles/items.css";
 import "../styles/summary.css";
@@ -20,6 +20,8 @@ import {
   fetchItems,
   fetchPipeItems,
   calculatePipeWeight,
+  fetchSteelItems,
+  calculateSteelWeight,
   createOrder,
   updateOrderStatus,
   logout
@@ -43,6 +45,7 @@ export default function Billing() {
   const [employees, setEmployees] = useState([]);
   const [itemsFromDb, setItemsFromDb] = useState([]);
   const [pipeItemsFromDb, setPipeItemsFromDb] = useState([]);
+  const [steelItemsFromDb, setSteelItemsFromDb] = useState([]);
   const [itemFilter, setItemFilter] = useState("");
   const [dropdownCategory, setDropdownCategory] = useState("ALL");
 
@@ -99,6 +102,9 @@ export default function Billing() {
     fetchPipeItems().then((data) => setPipeItemsFromDb(Array.isArray(data) ? data : [])).catch((err) => {
       console.error("Failed to load pipe items:", err);
     });
+    fetchSteelItems().then((data) => setSteelItemsFromDb(Array.isArray(data) ? data : [])).catch((err) => {
+      console.error("Failed to load steel items:", err);
+    });
   }, []);
 
   useEffect(() => {
@@ -112,6 +118,9 @@ export default function Billing() {
       });
       fetchPipeItems().then((data) => setPipeItemsFromDb(Array.isArray(data) ? data : [])).catch((err) => {
         console.error("Failed to load pipe items:", err);
+      });
+      fetchSteelItems().then((data) => setSteelItemsFromDb(Array.isArray(data) ? data : [])).catch((err) => {
+        console.error("Failed to load steel items:", err);
       });
     }
   }, [showItemDropdown]);
@@ -127,7 +136,9 @@ export default function Billing() {
   const itemCategories = [...new Set(itemsFromDb.map((it) => it.category?.name).filter(Boolean))];
   const pipeVariants = [...new Set(pipeItemsFromDb.map((p) => p.variant).filter(Boolean))];
   const pipeVariantTabs = pipeVariants.map((v) => `Pipe ${v}`);
-  const categoryTabs = ["ALL", ...itemCategories, ...pipeVariantTabs];
+  const steelTypes = [...new Set(steelItemsFromDb.map((s) => s.type).filter(Boolean))];
+  const steelTypeTabs = steelTypes.map((t) => `MS ${t}`);
+  const categoryTabs = ["ALL", ...itemCategories, ...pipeVariantTabs, ...steelTypeTabs];
 
   const allItemsForDropdown = [
     ...itemsFromDb,
@@ -141,6 +152,17 @@ export default function Billing() {
       thickness: p.thickness,
       weightPerMeter: p.weightPerMeter,
       unitType: "KG",
+    })),
+    ...steelItemsFromDb.map((s) => ({
+      _isSteel: true,
+      id: `steel-${s.id}`,
+      name: `MS ${s.size}`,
+      displayName: `MS ${s.size}`,
+      steelTypeFull: s.type,
+      steelType: s.type,
+      size: s.size,
+      weightPerMeter: s.weightPerMeter,
+      unitType: "KG",
     }))
   ];
 
@@ -149,7 +171,8 @@ export default function Billing() {
     const matchesCategory =
       dropdownCategory === "ALL" ||
       (it._isPipe && dropdownCategory === `Pipe ${it.variant}`) ||
-      (!it._isPipe && it.category?.name === dropdownCategory);
+      (it._isSteel && dropdownCategory === `MS ${it.steelType}`) ||
+      (!it._isPipe && !it._isSteel && it.category?.name === dropdownCategory);
     return matchesSearch && matchesCategory;
   });
 
@@ -232,6 +255,25 @@ export default function Billing() {
           weight: 0,
         },
       ]);
+    } else if (it._isSteel) {
+      setItems((prev) => [
+        ...prev,
+        {
+          id: `${it.id}-${Date.now()}`,
+          name: `MS ${it.size}`,
+          unitType: "KG",
+          originalPrice: 0,
+          price: 0,
+          unitValue: 0,
+          amount: 0,
+          _isSteel: true,
+          steelType: it.steelType,
+          size: it.size,
+          weightPerMeter: it.weightPerMeter,
+          length: "",
+          weight: 0,
+        },
+      ]);
     } else {
       const originalPrice = Number(it.price) || 0;
       const existing = items.find((i) => i.id === it.id);
@@ -292,6 +334,31 @@ export default function Billing() {
     setItems(next);
   };
 
+  const handleSteelLength = async (index, length) => {
+    const next = [...items];
+    const item = next[index];
+    item.length = length;
+    const lengthNum = Number(length) || 0;
+    if (lengthNum > 0) {
+      try {
+        const result = await calculateSteelWeight({
+          type: item.steelType,
+          size: item.size,
+          length: lengthNum,
+        });
+        const weight = Number(result.totalWeight) || 0;
+        item.weight = weight;
+        item.amount = weight * (Number(item.price) || 0);
+      } catch (err) {
+        console.error("Steel weight calculation failed:", err);
+      }
+    } else {
+      item.weight = 0;
+      item.amount = 0;
+    }
+    setItems(next);
+  };
+
   const updateItemUnitValue = (index, value) => {
     const num = value === "" ? 0 : Number(value) || 0;
     setItems((prev) => {
@@ -299,7 +366,7 @@ export default function Billing() {
       const item = next[index];
       if (!item) return prev;
       item.unitValue = num;
-      if (item._isPipe) {
+      if (item._isPipe || item._isSteel) {
         item.amount = (Number(item.weight) || 0) * (Number(item.price) || 0);
       } else {
         item.amount = num * (Number(item.price) || 0);
@@ -315,7 +382,7 @@ export default function Billing() {
       const item = next[index];
       if (!item) return prev;
       item.price = num;
-      if (item._isPipe) {
+      if (item._isPipe || item._isSteel) {
         item.amount = (Number(item.weight) || 0) * num;
       } else {
         item.amount = (Number(item.unitValue) || 0) * num;
@@ -338,11 +405,11 @@ export default function Billing() {
         employeeId: selectedEmployee?.id || null,
         gstEnabled: gstEnabled,
         items: items.map((item) => ({
-          itemId: item._isPipe ? null : item.id,
-          isPipe: Boolean(item._isPipe),
-          itemName: item._isPipe ? item.name : undefined,
-          unitType: item._isPipe ? item.unitType : undefined,
-          unitValue: item._isPipe ? (Number(item.weight) || 0) : (Number(item.unitValue) || 0),
+          itemId: (item._isPipe || item._isSteel) ? null : item.id,
+          isPipe: Boolean(item._isPipe || item._isSteel),
+          itemName: (item._isPipe || item._isSteel) ? item.name : undefined,
+          unitType: (item._isPipe || item._isSteel) ? item.unitType : undefined,
+          unitValue: (item._isPipe || item._isSteel) ? (Number(item.weight) || 0) : (Number(item.unitValue) || 0),
           price: Number(item.price) || 0,
         })),
       };
@@ -590,6 +657,21 @@ export default function Billing() {
                     <span style={{ fontSize: '11px', color: '#9ca3af' }}></span>
                   </div>
                 )}
+                {item._isSteel && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
+                    <span style={{ fontSize: '11px', color: '#9ca3af', whiteSpace: 'nowrap' }}>Length:</span>
+                    <input
+                      className="qty-input"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      style={{ width: '64px', fontSize: '12px', padding: '3px 6px' }}
+                      placeholder="m"
+                      value={item.length}
+                      onChange={(e) => handleSteelLength(index, e.target.value)}
+                    />
+                  </div>
+                )}
               </div>
               <div className="item-col-qty">
                 <input
@@ -623,7 +705,7 @@ export default function Billing() {
                 />
               </div>
               <div className="item-col-weight">
-                {item._isPipe ? (
+                {(item._isPipe || item._isSteel) ? (
                   <div style={{ textAlign: 'right' }}>
                     <span style={{ fontSize: '13px', fontWeight: '600', color: '#4f46e5' }}>
                       {item.weight ? Number(item.weight).toFixed(2) : '—'}
@@ -823,6 +905,11 @@ export default function Billing() {
                       <span>
                         <span style={{ fontWeight: 500 }}>{it.variant} {it.size}</span>
                         <span style={{ fontSize: '11px', color: '#6b7280', marginLeft: '6px' }}>t:{it.thickness}mm</span>
+                      </span>
+                    ) : it._isSteel ? (
+                      <span>
+                        <span style={{ fontWeight: 500 }}>MS {it.size}</span>
+                        <span style={{ fontSize: '11px', color: '#6b7280', marginLeft: '6px' }}>{(Number(it.weightPerMeter) * 6).toFixed(2)} kg/length</span>
                       </span>
                     ) : it.name}
                   </div>
