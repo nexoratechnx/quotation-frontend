@@ -253,3 +253,23 @@ export const calculateSteelWeight = async ({ type, size, length }) => {
   });
   return handleResponse(res);
 };
+
+export const fetchSheetItems = async () => {
+  const res = await fetch(`${BASE_URL}/sheet/all`, {
+    headers: getAuthHeaders()
+  });
+  return handleResponse(res);
+};
+
+export const calculateSheetWeight = async ({ size, thickness, quantity }) => {
+  const res = await fetch(`${BASE_URL}/sheet/calculate`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({
+      size: String(size),
+      thickness: String(thickness),
+      quantity: String(quantity)
+    })
+  });
+  return handleResponse(res);
+};

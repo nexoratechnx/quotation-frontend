@@ -1,4 +1,4 @@
-﻿import "../styles/modal.css";
+import "../styles/modal.css";
 import { useEffect, useRef, useState } from "react";
 import { addItem, fetchCategories } from "../api/api";
 
@@ -39,7 +39,11 @@ export default function AddItemModal({ onClose, onSaved }) {
       });
 
       onSaved?.(newItem);
-      onClose();
+      setName("");
+      setPrice("");
+      setCategoryId("");
+      setUnitType("PCS");
+      nameRef.current?.focus();
     } catch (err) {
       alert("Failed to add item");
       console.error(err);
@@ -119,7 +123,7 @@ export default function AddItemModal({ onClose, onSaved }) {
             onClick={handleSave}
             disabled={loading}
           >
-            {loading ? "Saving..." : "Save (Enter)"}
+            {loading ? "Saving..." : "Save"}
           </button>
         </div>
       </div>
