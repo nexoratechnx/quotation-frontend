@@ -22,6 +22,8 @@ import {
   calculatePipeWeight,
   fetchSteelItems,
   calculateSteelWeight,
+  fetchSheetItems,
+  calculateSheetWeight,
   createOrder,
   updateOrderStatus,
   logout
@@ -46,6 +48,7 @@ export default function Billing() {
   const [itemsFromDb, setItemsFromDb] = useState([]);
   const [pipeItemsFromDb, setPipeItemsFromDb] = useState([]);
   const [steelItemsFromDb, setSteelItemsFromDb] = useState([]);
+  const [sheetItemsFromDb, setSheetItemsFromDb] = useState([]);
   const [itemFilter, setItemFilter] = useState("");
   const [dropdownCategory, setDropdownCategory] = useState("ALL");
 
@@ -64,6 +67,7 @@ export default function Billing() {
   const [showPreview, setShowPreview] = useState(false);
   const [savingOrder, setSavingOrder] = useState(false);
   const [orderError, setOrderError] = useState(null);
+  const [peekIndex, setPeekIndex] = useState(null);
 
 
 
@@ -72,6 +76,7 @@ export default function Billing() {
   const placeholderDropdownRef = useRef(null);
   const itemFilterInputRef = useRef(null);
   const unitValueRefs = useRef([]);
+  const weightRefs = useRef([]);
   const priceRefs = useRef([]);
   const deleteRefs = useRef([]);
   const gstSelectRef = useRef(null);
@@ -105,6 +110,9 @@ export default function Billing() {
     fetchSteelItems().then((data) => setSteelItemsFromDb(Array.isArray(data) ? data : [])).catch((err) => {
       console.error("Failed to load steel items:", err);
     });
+    fetchSheetItems().then((data) => setSheetItemsFromDb(Array.isArray(data) ? data : [])).catch((err) => {
+      console.error("Failed to load sheet items:", err);
+    });
   }, []);
 
   useEffect(() => {
@@ -122,6 +130,9 @@ export default function Billing() {
       fetchSteelItems().then((data) => setSteelItemsFromDb(Array.isArray(data) ? data : [])).catch((err) => {
         console.error("Failed to load steel items:", err);
       });
+      fetchSheetItems().then((data) => setSheetItemsFromDb(Array.isArray(data) ? data : [])).catch((err) => {
+        console.error("Failed to load sheet items:", err);
+      });
     }
   }, [showItemDropdown]);
 
@@ -138,7 +149,8 @@ export default function Billing() {
   const pipeVariantTabs = pipeVariants.map((v) => `Pipe ${v}`);
   const steelTypes = [...new Set(steelItemsFromDb.map((s) => s.type).filter(Boolean))];
   const steelTypeTabs = steelTypes.map((t) => `MS ${t}`);
-  const categoryTabs = ["ALL", ...itemCategories, ...pipeVariantTabs, ...steelTypeTabs];
+  const hasSheets = sheetItemsFromDb.length > 0;
+  const categoryTabs = ["ALL", ...itemCategories, ...pipeVariantTabs, ...steelTypeTabs, ...(hasSheets ? ["Sheet"] : [])];
 
   const allItemsForDropdown = [
     ...itemsFromDb,
@@ -163,6 +175,16 @@ export default function Billing() {
       size: s.size,
       weightPerMeter: s.weightPerMeter,
       unitType: "KG",
+    })),
+    ...sheetItemsFromDb.map((sh) => ({
+      _isSheet: true,
+      id: `sheet-${sh.id}`,
+      name: `Sheet ${sh.size}`,
+      displayName: `Sheet ${sh.size} (${sh.lengthM}m × ${sh.widthM}m)`,
+      size: sh.size,
+      lengthM: sh.lengthM,
+      widthM: sh.widthM,
+      unitType: "KG",
     }))
   ];
 
@@ -172,7 +194,8 @@ export default function Billing() {
       dropdownCategory === "ALL" ||
       (it._isPipe && dropdownCategory === `Pipe ${it.variant}`) ||
       (it._isSteel && dropdownCategory === `MS ${it.steelType}`) ||
-      (!it._isPipe && !it._isSteel && it.category?.name === dropdownCategory);
+      (it._isSheet && dropdownCategory === "Sheet") ||
+      (!it._isPipe && !it._isSteel && !it._isSheet && it.category?.name === dropdownCategory);
     return matchesSearch && matchesCategory;
   });
 
@@ -274,6 +297,26 @@ export default function Billing() {
           weight: 0,
         },
       ]);
+    } else if (it._isSheet) {
+      setItems((prev) => [
+        ...prev,
+        {
+          id: `${it.id}-${Date.now()}`,
+          name: `Sheet ${it.size}`,
+          unitType: "KG",
+          originalPrice: 0,
+          price: 0,
+          unitValue: 0,
+          amount: 0,
+          _isSheet: true,
+          size: it.size,
+          lengthM: it.lengthM,
+          widthM: it.widthM,
+          thickness: "",
+          quantity: 1,
+          weight: 0,
+        },
+      ]);
     } else {
       const originalPrice = Number(it.price) || 0;
       const existing = items.find((i) => i.id === it.id);
@@ -359,6 +402,55 @@ export default function Billing() {
     setItems(next);
   };
 
+  const handleSheetCalc = async (index, thickness, quantityOverride) => {
+    const thicknessNum = Number(thickness) || 0;
+
+    // Step 1: persist new thickness immediately (functional — safe)
+    setItems((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], thickness };
+      return next;
+    });
+
+    // Step 2: read values needed for API from current snapshot
+    const currentItem = items[index];
+    if (!currentItem) return;
+    const quantityNum = quantityOverride !== undefined
+      ? Number(quantityOverride)
+      : Number(currentItem.unitValue) || 0;
+
+    if (thicknessNum > 0 && quantityNum > 0) {
+      try {
+        const result = await calculateSheetWeight({
+          size: currentItem.size,
+          thickness: thicknessNum,
+          quantity: quantityNum,
+        });
+        const weight = Number(result.totalWeight) || 0;
+        // Step 3: merge weight + amount into whatever state exists now (functional — safe)
+        setItems((prev) => {
+          const next = [...prev];
+          const item = { ...next[index] };
+          item.weight = weight;
+          item.amount = weight * (Number(item.price) || 0);
+          next[index] = item;
+          return next;
+        });
+      } catch (err) {
+        console.error("Sheet weight calculation failed:", err);
+      }
+    } else {
+      setItems((prev) => {
+        const next = [...prev];
+        const item = { ...next[index] };
+        item.weight = 0;
+        item.amount = 0;
+        next[index] = item;
+        return next;
+      });
+    }
+  };
+
   const updateItemUnitValue = (index, value) => {
     const num = value === "" ? 0 : Number(value) || 0;
     setItems((prev) => {
@@ -368,9 +460,28 @@ export default function Billing() {
       item.unitValue = num;
       if (item._isPipe || item._isSteel) {
         item.amount = (Number(item.weight) || 0) * (Number(item.price) || 0);
+      } else if (item._isSheet) {
+        item.amount = (Number(item.weight) || 0) * (Number(item.price) || 0);
       } else {
         item.amount = num * (Number(item.price) || 0);
       }
+      return next;
+    });
+    // Pass `num` directly — avoids reading stale items[index].unitValue
+    const currentItem = items[index];
+    if (currentItem?._isSheet && currentItem.thickness) {
+      handleSheetCalc(index, currentItem.thickness, num);
+    }
+  };
+
+  const updateItemWeight = (index, value) => {
+    const num = value === "" ? 0 : Number(value) || 0;
+    setItems((prev) => {
+      const next = [...prev];
+      const item = next[index];
+      if (!item) return prev;
+      item.weight = num;
+      item.amount = num * (Number(item.price) || 0);
       return next;
     });
   };
@@ -382,7 +493,7 @@ export default function Billing() {
       const item = next[index];
       if (!item) return prev;
       item.price = num;
-      if (item._isPipe || item._isSteel) {
+      if (item._isPipe || item._isSteel || item._isSheet) {
         item.amount = (Number(item.weight) || 0) * num;
       } else {
         item.amount = (Number(item.unitValue) || 0) * num;
@@ -405,11 +516,11 @@ export default function Billing() {
         employeeId: selectedEmployee?.id || null,
         gstEnabled: gstEnabled,
         items: items.map((item) => ({
-          itemId: (item._isPipe || item._isSteel) ? null : item.id,
-          isPipe: Boolean(item._isPipe || item._isSteel),
-          itemName: (item._isPipe || item._isSteel) ? item.name : undefined,
-          unitType: (item._isPipe || item._isSteel) ? item.unitType : undefined,
-          unitValue: (item._isPipe || item._isSteel) ? (Number(item.weight) || 0) : (Number(item.unitValue) || 0),
+          itemId: (item._isPipe || item._isSteel || item._isSheet) ? null : item.id,
+          isPipe: Boolean(item._isPipe || item._isSteel || item._isSheet),
+          itemName: (item._isPipe || item._isSteel || item._isSheet) ? item.name : undefined,
+          unitType: (item._isPipe || item._isSteel || item._isSheet) ? item.unitType : undefined,
+          unitValue: (item._isPipe || item._isSteel || item._isSheet) ? (Number(item.weight) || 0) : (Number(item.unitValue) || 0),
           price: Number(item.price) || 0,
         })),
       };
@@ -672,6 +783,22 @@ export default function Billing() {
                     />
                   </div>
                 )}
+                {item._isSheet && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
+                    <span style={{ fontSize: '11px', color: '#9ca3af', whiteSpace: 'nowrap' }}>Thick:</span>
+                    <input
+                      className="qty-input"
+                      type="number"
+                      min="0"
+                      step="0.5"
+                      style={{ width: '58px', fontSize: '12px', padding: '3px 6px' }}
+                      placeholder="mm"
+                      value={item.thickness}
+                      onChange={(e) => handleSheetCalc(index, e.target.value)}
+                    />
+                    <span style={{ fontSize: '10px', color: '#9ca3af' }}>mm</span>
+                  </div>
+                )}
               </div>
               <div className="item-col-qty">
                 <input
@@ -705,13 +832,19 @@ export default function Billing() {
                 />
               </div>
               <div className="item-col-weight">
-                {(item._isPipe || item._isSteel) ? (
-                  <div style={{ textAlign: 'right' }}>
-                    <span style={{ fontSize: '13px', fontWeight: '600', color: '#4f46e5' }}>
-                      {item.weight ? Number(item.weight).toFixed(2) : '—'}
-                    </span>
-                    {item.weight > 0 && <span style={{ fontSize: '10px', color: '#9ca3af', marginLeft: '2px' }}>KG</span>}
-                  </div>
+                {(item._isPipe || item._isSteel || item._isSheet) ? (
+                  <input
+                    ref={(el) => (weightRefs.current[index] = el)}
+                    className="qty-input"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    style={{ width: '72px', fontSize: '12px', padding: '3px 6px', fontWeight: '600', color: '#4f46e5' }}
+                    value={item.weight === 0 && item.weight !== undefined ? '' : (item.weight || '')}
+                    placeholder="KG"
+                    onChange={(e) => updateItemWeight(index, e.target.value)}
+                    onFocus={(e) => e.target.select()}
+                  />
                 ) : (
                   <span style={{ fontSize: '13px', color: '#d1d5db', display: 'block', textAlign: 'right' }}>—</span>
                 )}
@@ -745,14 +878,32 @@ export default function Billing() {
               </div>
               <div className="item-col-unit item-col-unit-readonly">{item.unitType || "PCS"}</div>
               <div className="item-col-amount">₹{(Number(item.amount) || 0).toFixed(2)}</div>
-              <div className="item-col-eye">
-                <span
+              <div className="item-col-eye" style={{ position: 'relative' }}>
+                <button
                   className="price-eye-btn"
-                  title={`Original: ₹${Number(item.originalPrice ?? item.price).toFixed(2)} | Selling: ₹${Number(item.price).toFixed(2)}`}
-                  aria-label="View original and selling price"
+                  aria-label="Hold to view original price"
+                  onMouseDown={(e) => { e.preventDefault(); setPeekIndex(index); }}
+                  onMouseUp={() => setPeekIndex(null)}
+                  onMouseLeave={() => setPeekIndex(null)}
+                  onTouchStart={(e) => { e.preventDefault(); setPeekIndex(index); }}
+                  onTouchEnd={() => setPeekIndex(null)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', fontSize: '15px', lineHeight: 1 }}
                 >
                   👁
-                </span>
+                </button>
+                {peekIndex === index && (
+                  <div style={{
+                    position: 'absolute', bottom: '110%', right: 0,
+                    background: '#1e1b4b', color: '#fff',
+                    borderRadius: '6px', padding: '5px 9px',
+                    fontSize: '12px', whiteSpace: 'nowrap',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+                    zIndex: 100,
+                  }}>
+                    <div style={{ color: '#a5b4fc', fontSize: '10px', marginBottom: '2px' }}>Original Price</div>
+                    <div style={{ fontWeight: '700', fontSize: '13px' }}>₹{Number(item.originalPrice ?? item.price).toFixed(2)}</div>
+                  </div>
+                )}
               </div>
               <div className="item-col-action">
                 <button
@@ -910,6 +1061,11 @@ export default function Billing() {
                       <span>
                         <span style={{ fontWeight: 500 }}>MS {it.size}</span>
                         <span style={{ fontSize: '11px', color: '#6b7280', marginLeft: '6px' }}>{(Number(it.weightPerMeter) * 6).toFixed(2)} kg/length</span>
+                      </span>
+                    ) : it._isSheet ? (
+                      <span>
+                        <span style={{ fontWeight: 500 }}>Sheet {it.size}</span>
+                        <span style={{ fontSize: '11px', color: '#6b7280', marginLeft: '6px' }}>{it.lengthM}m × {it.widthM}m</span>
                       </span>
                     ) : it.name}
                   </div>
