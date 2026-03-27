@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import "../styles/login.css";
 import { useNavigate } from "react-router-dom";
 import { login } from "../api/api";
@@ -19,7 +19,11 @@ export default function Login() {
       await login({ email, password });
       navigate("/billing");
     } catch (err) {
-      setError("Invalid email or password. Please try again.");
+      if (err.message.includes("Failed to fetch") || err.message.includes("NetworkError")) {
+        setError(`Unable to connect to the server. Is the backend running? (${err.message})`);
+      } else {
+        setError(`Login Failed: ${err.message || 'Unknown error occurred'}`);
+      }
       console.error("Login error:", err);
     } finally {
       setLoading(false);

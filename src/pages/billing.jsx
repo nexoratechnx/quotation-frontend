@@ -79,6 +79,8 @@ export default function Billing() {
   const weightRefs = useRef([]);
   const priceRefs = useRef([]);
   const deleteRefs = useRef([]);
+  const lengthRefs = useRef([]);
+  const thicknessRefs = useRef([]);
   const gstSelectRef = useRef(null);
   const previewBtnRef = useRef(null);
   const printBtnRef = useRef(null);
@@ -204,16 +206,28 @@ export default function Billing() {
       if (e.ctrlKey && e.key === "o") {
         e.preventDefault();
         navigate("/orders");
+        return;
       }
       if (e.ctrlKey && e.key === "p") {
         e.preventDefault();
         handlePrint();
+        return;
+      }
+
+      const activeTag = document.activeElement?.tagName?.toLowerCase();
+      const isInputFocused = activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select';
+      const modalOpen = showAddCustomer || showAddEmployee || showAddItem || showAddCategory || showExitPopup || showPreview;
+
+      if (!isInputFocused && !modalOpen && !e.ctrlKey && !e.altKey && !e.metaKey && e.key.length === 1 && /[a-zA-Z0-9]/.test(e.key)) {
+        setShowItemDropdown(true);
+        setItemFilter(e.key);
+        setTimeout(() => itemFilterInputRef.current?.focus(), 0);
       }
     };
 
     window.addEventListener("keydown", handleKeys);
     return () => window.removeEventListener("keydown", handleKeys);
-  }, [navigate, items, selectedCustomer]);
+  }, [navigate, items, selectedCustomer, showAddCustomer, showAddEmployee, showAddItem, showAddCategory, showExitPopup, showPreview]);
 
   useEffect(() => {
     const handleExit = (e) => {
@@ -348,7 +362,26 @@ export default function Billing() {
     }
     setItemIndex(0);
     setItemFilter("");
-    setTimeout(() => itemFilterInputRef.current?.focus(), 0);
+    setShowItemDropdown(false);
+    
+    setTimeout(() => {
+      const isNew = !items.find(i => i.id === it.id);
+      const targetIndex = isNew ? items.length : items.findIndex(i => i.id === it.id);
+      
+      let el = null;
+      if (it._isPipe || it._isSteel) {
+        el = lengthRefs.current[targetIndex];
+      } else if (it._isSheet) {
+        el = thicknessRefs.current[targetIndex];
+      } else {
+        el = unitValueRefs.current[targetIndex];
+      }
+      
+      if (el) {
+        el.focus();
+        el.select();
+      }
+    }, 150);
   };
 
   const handlePipeLength = async (index, length) => {
@@ -762,8 +795,16 @@ export default function Billing() {
                       step="0.01"
                       style={{ width: '64px', fontSize: '12px', padding: '3px 6px' }}
                       placeholder="m"
-                      value={item.length}
+                      value={item.length === 0 ? "" : (item.length == null ? "" : item.length)}
                       onChange={(e) => handlePipeLength(index, e.target.value)}
+                      ref={(el) => (lengthRefs.current[index] = el)}
+                      onKeyDown={(e) => {
+                        if (e.key === "ArrowUp") e.preventDefault();
+                        if (e.key === "Enter" || e.key === "ArrowRight" || e.key === "ArrowDown") {
+                          e.preventDefault();
+                          unitValueRefs.current[index]?.focus();
+                        }
+                      }}
                     />
                     <span style={{ fontSize: '11px', color: '#9ca3af' }}></span>
                   </div>
@@ -778,8 +819,16 @@ export default function Billing() {
                       step="0.01"
                       style={{ width: '64px', fontSize: '12px', padding: '3px 6px' }}
                       placeholder="m"
-                      value={item.length}
+                      value={item.length === 0 ? "" : (item.length == null ? "" : item.length)}
                       onChange={(e) => handleSteelLength(index, e.target.value)}
+                      ref={(el) => (lengthRefs.current[index] = el)}
+                      onKeyDown={(e) => {
+                        if (e.key === "ArrowUp") e.preventDefault();
+                        if (e.key === "Enter" || e.key === "ArrowRight" || e.key === "ArrowDown") {
+                          e.preventDefault();
+                          unitValueRefs.current[index]?.focus();
+                        }
+                      }}
                     />
                   </div>
                 )}
@@ -793,8 +842,16 @@ export default function Billing() {
                       step="0.5"
                       style={{ width: '58px', fontSize: '12px', padding: '3px 6px' }}
                       placeholder="mm"
-                      value={item.thickness}
+                      value={item.thickness === 0 ? "" : (item.thickness == null ? "" : item.thickness)}
                       onChange={(e) => handleSheetCalc(index, e.target.value)}
+                      ref={(el) => (thicknessRefs.current[index] = el)}
+                      onKeyDown={(e) => {
+                        if (e.key === "ArrowUp") e.preventDefault();
+                        if (e.key === "Enter" || e.key === "ArrowRight" || e.key === "ArrowDown") {
+                          e.preventDefault();
+                          unitValueRefs.current[index]?.focus();
+                        }
+                      }}
                     />
                     <span style={{ fontSize: '10px', color: '#9ca3af' }}>mm</span>
                   </div>
@@ -808,7 +865,7 @@ export default function Billing() {
                   min="0"
                   placeholder="Qty"
                   step={["KG", "SQFT"].includes(item.unitType) ? "0.01" : "1"}
-                  value={item.unitValue == null ? "" : item.unitValue}
+                  value={item.unitValue === 0 ? "" : (item.unitValue == null ? "" : item.unitValue)}
                   onChange={(e) => updateItemUnitValue(index, e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Escape") {
@@ -817,9 +874,18 @@ export default function Billing() {
                       gstSelectRef.current?.focus();
                       return;
                     }
-                    if (e.key === "ArrowDown") {
+                    if (e.key === "Enter" || e.key === "ArrowRight" || e.key === "ArrowDown") {
                       e.preventDefault();
-                      priceRefs.current[index]?.focus();
+                      if (item._isPipe || item._isSteel || item._isSheet) {
+                        weightRefs.current[index]?.focus();
+                      } else {
+                        priceRefs.current[index]?.focus();
+                      }
+                    }
+                    if (e.key === "ArrowLeft") {
+                      e.preventDefault();
+                      if (item._isPipe || item._isSteel) lengthRefs.current[index]?.focus();
+                      else if (item._isSheet) thicknessRefs.current[index]?.focus();
                     }
                     if (e.key === "ArrowUp" && index === 0) {
                       e.preventDefault();
@@ -844,6 +910,16 @@ export default function Billing() {
                     placeholder="KG"
                     onChange={(e) => updateItemWeight(index, e.target.value)}
                     onFocus={(e) => e.target.select()}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === "ArrowRight" || e.key === "ArrowDown") {
+                        e.preventDefault();
+                        priceRefs.current[index]?.focus();
+                      }
+                      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+                        e.preventDefault();
+                        unitValueRefs.current[index]?.focus();
+                      }
+                    }}
                   />
                 ) : (
                   <span style={{ fontSize: '13px', color: '#d1d5db', display: 'block', textAlign: 'right' }}>—</span>
@@ -856,7 +932,7 @@ export default function Billing() {
                   type="number"
                   min="0"
                   step="0.01"
-                  value={item.price == null ? "" : item.price}
+                  value={item.price === 0 ? "" : (item.price == null ? "" : item.price)}
                   onChange={(e) => updateItemPrice(index, e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Escape") {
@@ -865,13 +941,23 @@ export default function Billing() {
                       gstSelectRef.current?.focus();
                       return;
                     }
-                    if (e.key === "ArrowDown") {
+                    if (e.key === "Enter") {
                       e.preventDefault();
-                      deleteRefs.current[index]?.focus();
+                      itemFilterInputRef.current?.focus();
+                      setShowItemDropdown(true);
                     }
-                    if (e.key === "ArrowUp") {
+                    if (e.key === "ArrowDown" || e.key === "ArrowRight") {
                       e.preventDefault();
-                      unitValueRefs.current[index]?.focus();
+                      if (index < items.length - 1) priceRefs.current[index + 1]?.focus();
+                      else deleteRefs.current[index]?.focus();
+                    }
+                    if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+                      e.preventDefault();
+                      if (item._isPipe || item._isSteel || item._isSheet) {
+                        weightRefs.current[index]?.focus();
+                      } else {
+                        unitValueRefs.current[index]?.focus();
+                      }
                     }
                   }}
                 />

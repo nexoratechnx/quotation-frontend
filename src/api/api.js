@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://quotation-backend-2-ugvx.onrender.com/api";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" ? "http://localhost:8080/api" : "https://quotation-backend-2-ugvx.onrender.com/api");
 
 console.log('🔗 API Base URL:', BASE_URL);
 
