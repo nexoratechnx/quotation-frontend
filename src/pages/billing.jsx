@@ -168,8 +168,8 @@ export default function Billing() {
     ...steelItemsFromDb.map((s) => ({
       _isSteel: true,
       id: `steel-${s.id}`,
-      name: `MS ${s.size}`,
-      displayName: `MS ${s.size}`,
+      name: `MS ${s.type} ${s.size}`,
+      displayName: `MS ${s.type} ${s.size}`,
       steelTypeFull: s.type,
       steelType: s.type,
       size: s.size,
@@ -283,7 +283,7 @@ export default function Billing() {
         ...prev,
         {
           id: `${it.id}-${Date.now()}`,
-          name: `MS ${it.size}`,
+          name: `MS ${it.steelType} ${it.size}`,
           unitType: "KG",
           originalPrice: 0,
           price: 0,
@@ -1059,7 +1059,7 @@ export default function Billing() {
                       </span>
                     ) : it._isSteel ? (
                       <span>
-                        <span style={{ fontWeight: 500 }}>MS {it.size}</span>
+                        <span style={{ fontWeight: 500 }}>MS {it.steelType} {it.size}</span>
                         <span style={{ fontSize: '11px', color: '#6b7280', marginLeft: '6px' }}>{(Number(it.weightPerMeter) * 6).toFixed(2)} kg/length</span>
                       </span>
                     ) : it._isSheet ? (

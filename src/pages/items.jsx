@@ -297,7 +297,7 @@ export default function Items() {
                 {visibleSteelItems.map((s) => (
                   <tr key={`steel-${s.id}`} style={{ background: '#f0fdf4' }}>
                     <td className="items-cell-name">
-                      <span>MS {s.size}</span>
+                      <span>MS {s.type} {s.size}</span>
                       <span style={{
                         marginLeft: '8px',
                         fontSize: '10px',
