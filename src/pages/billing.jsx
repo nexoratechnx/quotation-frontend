@@ -159,8 +159,8 @@ export default function Billing() {
     ...pipeItemsFromDb.map((p) => ({
       _isPipe: true,
       id: `pipe-${p.id}`,
-      name: `${p.variant} ${p.size}`,
-      displayName: `${p.variant} ${p.size} (t:${p.thickness}mm)`,
+      name: `Pipe ${p.variant} ${p.size}`,
+      displayName: `Pipe ${p.variant} ${p.size} (t:${p.thickness}mm)`,
       variant: p.variant,
       size: p.size,
       thickness: p.thickness,
@@ -221,7 +221,12 @@ export default function Billing() {
       if (!isInputFocused && !modalOpen && !e.ctrlKey && !e.altKey && !e.metaKey && e.key.length === 1 && /[a-zA-Z0-9]/.test(e.key)) {
         setShowItemDropdown(true);
         setItemFilter(e.key);
-        setTimeout(() => itemFilterInputRef.current?.focus(), 0);
+        setTimeout(() => {
+          if (itemFilterInputRef.current) {
+            itemFilterInputRef.current.focus();
+            itemFilterInputRef.current.select();
+          }
+        }, 100);
       }
     };
 
@@ -277,7 +282,7 @@ export default function Billing() {
         ...prev,
         {
           id: `${it.id}-${Date.now()}`,
-          name: `${it.variant} ${it.size} (${it.thickness}mm)`,
+          name: `Pipe ${it.variant} ${it.size}`,
           unitType: "KG",
           originalPrice: 0,
           price: 0,
@@ -1140,7 +1145,7 @@ export default function Billing() {
                   >
                     {it._isPipe ? (
                       <span>
-                        <span style={{ fontWeight: 500 }}>{it.variant} {it.size}</span>
+                        <span style={{ fontWeight: 500 }}>Pipe {it.variant} {it.size}</span>
                         <span style={{ fontSize: '11px', color: '#6b7280', marginLeft: '6px' }}>t:{it.thickness}mm</span>
                       </span>
                     ) : it._isSteel ? (

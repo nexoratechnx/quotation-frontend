@@ -269,7 +269,7 @@ export default function Items() {
                 {visiblePipeItems.map((p) => (
                   <tr key={`pipe-${p.id}`} style={{ background: '#fafbff' }}>
                     <td className="items-cell-name">
-                      <span>{p.variant} {p.size}</span>
+                      <span>Pipe {p.variant} {p.size}</span>
                       <span style={{
                         marginLeft: '8px',
                         fontSize: '10px',
